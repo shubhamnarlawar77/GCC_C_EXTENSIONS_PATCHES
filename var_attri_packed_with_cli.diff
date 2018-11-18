@@ -1,0 +1,207 @@
+diff --git a/src/CGOptions.cpp b/src/CGOptions.cpp
+index 6c9d3dc..6cf9e02 100644
+--- a/src/CGOptions.cpp
++++ b/src/CGOptions.cpp
+@@ -139,6 +139,7 @@ DEFINE_GETTER_SETTER_BOOL(math_notmp)
+ DEFINE_GETTER_SETTER_BOOL(longlong)
+ DEFINE_GETTER_SETTER_BOOL(int8)
+ DEFINE_GETTER_SETTER_BOOL(uint8)
++DEFINE_GETTER_SETTER_BOOL(variable_attribute_packed)
+ DEFINE_GETTER_SETTER_BOOL(enable_float)
+ DEFINE_GETTER_SETTER_BOOL(strict_float)
+ DEFINE_GETTER_SETTER_BOOL(pointers)
+@@ -260,6 +261,7 @@ CGOptions::set_default_settings(void)
+ 	longlong(true);
+ 	int8(true);
+ 	uint8(true);
++	variable_attribute_packed(true);
+ 	enable_float(false);
+ 	strict_float(false);
+ 	pointers(true);
+diff --git a/src/CGOptions.h b/src/CGOptions.h
+index ee7bb5e..5478c45 100644
+--- a/src/CGOptions.h
++++ b/src/CGOptions.h
+@@ -250,6 +250,9 @@ public:
+ 	static bool int8(void);
+ 	static bool int8(bool p);
+ 
++	static bool variable_attribute_packed(void);
++	static bool variable_attribute_packed(bool p);
++
+ 	static bool uint8(void);
+ 	static bool uint8(bool p);
+ 
+@@ -547,6 +550,7 @@ private:
+ 	static bool	math_notmp_;
+ 	static bool	longlong_;
+ 	static bool	int8_;
++	static bool	variable_attribute_packed_;
+ 	static bool	uint8_;
+ 	static bool	enable_float_;
+ 	static bool	strict_float_;
+diff --git a/src/Probabilities.cpp b/src/Probabilities.cpp
+index beea841..d278d3b 100644
+--- a/src/Probabilities.cpp
++++ b/src/Probabilities.cpp
+@@ -486,6 +486,9 @@ Probabilities::set_single_name_maps()
+ 	// for choosing a builtin function
+ 	set_single_name("builtin_function_prob", pBuiltinFunctionProb);
+ 
++	// for choosing variable attributes unused
++	set_single_name("variable_attribute_packed", pVariableAttriPackedProb);
++
+         //////////////////////////////////////////////////////////////////
+ 	// group for statement
+ 	set_single_name("statement_prob", pStatementProb);
+@@ -600,6 +603,7 @@ Probabilities::initialize_single_probs()
+ 	m[pAccessOnceVariableProb] = 20;
+ 	m[pInlineFunctionProb] = CGOptions::inline_function_prob();
+ 	m[pBuiltinFunctionProb] = CGOptions::builtin_function_prob();
++	m[pVariableAttriPackedProb] = 80;
+ 
+ 	std::map<ProbName, int>::iterator i;
+ 	for (i = m.begin(); i != m.end(); ++i) {
+diff --git a/src/Probabilities.h b/src/Probabilities.h
+index be483c5..0915fcd 100644
+--- a/src/Probabilities.h
++++ b/src/Probabilities.h
+@@ -65,6 +65,7 @@ enum ProbName {
+ 	pAccessOnceVariableProb,
+ 	pInlineFunctionProb,
+ 	pBuiltinFunctionProb,
++	pVariableAttriPackedProb,
+ 
+ 	// group for statement
+ 	pStatementProb,
+@@ -223,6 +224,9 @@ enum ProbName {
+ #define BuiltinFunctionProb \
+ 	Probabilities::get_prob(pBuiltinFunctionProb)
+ 
++#define VariableAttriPackedProb \
++	Probabilities::get_prob(pVariableAttriPackedProb)
++
+ //////////////////////////////////////////////////
+ #define UNARY_OPS_PROB_FILTER \
+ 	Probabilities::get_prob_filter(pUnaryOpsProb)
+diff --git a/src/RandomProgramGenerator.cpp b/src/RandomProgramGenerator.cpp
+index a8eb615..f0ee6c4 100644
+--- a/src/RandomProgramGenerator.cpp
++++ b/src/RandomProgramGenerator.cpp
+@@ -175,7 +175,7 @@ static void print_help()
+ 	cout << "  --math64 | --no-math64: enable | disable 64-bit math ops (enabled by default)." << endl << endl;
+ 	cout << "  --inline-function | --no-inline-function: enable | disable inline attributes on generated functions." << endl << endl;
+ 	cout << "  --inline-function-prob <num>: set the probability of each function being marked as inline (default is 50)." << endl << endl;
+-
++	cout << "  --variable-attribute-packed | --no-variable-attribute-packed: enable | disable __attribute__((packed)) (disabled by default)." << endl << endl;
+ 	// numbered controls
+ 	cout << "  --max-array-dim <num>: limit array dimensions to <num>. (default 3)" << endl << endl;
+ 	cout << "  --max-array-len-per-dim <num>: limit array length per dimension to <num> (default 10)." << endl << endl;
+@@ -775,6 +775,16 @@ main(int argc, char **argv)
+ 			continue;
+ 		}
+ 
++		if (strcmp (argv[i], "--variable-attribute-packed") == 0) {
++			CGOptions::variable_attribute_packed(true);
++			continue;
++		}
++
++		if (strcmp (argv[i], "--no-variable-attribute-packed") == 0) {
++			CGOptions::variable_attribute_packed(false);
++			continue;
++		}
++
+ 		if (strcmp (argv[i], "--uint8") == 0) {
+ 			CGOptions::uint8(true);
+ 			continue;
+diff --git a/src/Type.cpp b/src/Type.cpp
+index 73f7858..9e6ecb0 100644
+--- a/src/Type.cpp
++++ b/src/Type.cpp
+@@ -292,6 +292,7 @@ Type::Type(eSimpleType simple_type) :
+ 	has_assign_ops_(false),
+ 	has_implicit_nontrivial_assign_ops_(false)
+ {
++	var_attri_packed_for_struct =false;
+ 	// Nothing else to do.
+ }
+ 
+@@ -311,6 +312,7 @@ Type::Type(vector<const Type*>& struct_fields, bool isStruct, bool packed,
+     qfers_(qfers),
+     bitfields_length_(fields_length)
+ {
++	var_attri_packed_for_struct =false;
+     static unsigned int sequence = 0;
+ 	if (isStruct)
+         eType = eStruct;
+@@ -332,6 +334,7 @@ Type::Type(const Type* t) :
+     has_assign_ops_(false),
+     has_implicit_nontrivial_assign_ops_(false)
+ {
++	var_attri_packed_for_struct =false;
+ 	// Nothing else to do.
+ }
+ 
+@@ -1240,6 +1243,19 @@ GenerateAllTypes(void)
+ 		    AllTypes.push_back(ty);
+ 	    }
+     }
++	//we are setting the probability 
++	if (CGOptions::variable_attribute_packed()){
++		for (int i=0; i<AllTypes.size(); i++)
++		{
++        		Type* t = AllTypes[i];
++			//restricting only to struct for now , If needed ask andi and can change to union if he suggests
++		       	if ( (t->eType == eStruct )) {
++        		    	if(rnd_flipcoin(VariableAttriPackedProb))
++					t->var_attri_packed_for_struct = true;
++       			}
++   		}
++	}
++
+ }
+ 
+ // ---------------------------------------------------------------------
+@@ -1860,7 +1876,8 @@ void OutputStructUnion(Type* type, std::ostream &out)
+             }
+         }
+         // output myself
+-        if (type->packed_) {
++	//if and only if the variable attribute isn't set else if variable attribute is set then use __attribute__((packed))
++        if (type->packed_ && !CGOptions::variable_attribute_packed()) {
+             if (!CGOptions::ccomp()) {
+                 out << "#pragma pack(push)";
+                 really_outputln(out);
+@@ -1911,9 +1928,17 @@ void OutputStructUnion(Type* type, std::ostream &out)
+ 			OutputUnionAssignOps(type, out, true);
+ 		}
+ 
+-        out << "};";
++        out << "}";
++	//@end of struct defination
++	if (CGOptions::variable_attribute_packed()){
++		if (type->var_attri_packed_for_struct){
++				out << " __attribute__((packed))";
++		}
++	}
++	out << ";";
+ 		really_outputln(out);
+-        if (type->packed_) {
++	//if and only if the variable attribute isn't set else if variable attribute is set then use __attribute__((packed))
++        if (type->packed_ && !CGOptions::variable_attribute_packed()) {
+ 		if (CGOptions::ccomp()) {
+ 			out << "#pragma pack()";
+ 		}
+diff --git a/src/Type.h b/src/Type.h
+index 720f0b3..15710f4 100644
+--- a/src/Type.h
++++ b/src/Type.h
+@@ -268,7 +268,7 @@ public:
+ 	std::string printf_directive(void) const;
+ 	static Type* find_pointer_type(const Type* t, bool add);
+ 	static Type* find_type(const Type* t);
+-
++	bool var_attri_packed_for_struct;
+ // private:
+ 	eTypeDesc eType;
+ 	const Type *ptr_type;
