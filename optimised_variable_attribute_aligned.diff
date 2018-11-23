@@ -1,0 +1,524 @@
+diff --git a/src/ArrayVariable.cpp b/src/ArrayVariable.cpp
+index 9d934b2..1b09e34 100644
+--- a/src/ArrayVariable.cpp
++++ b/src/ArrayVariable.cpp
+@@ -64,6 +64,45 @@ using namespace std;
+  * count the "key" variable of an binary/unary operation.
+  * return 0 for constants, 2 for function calls
+  */
++
++void ArrayVariable::output_aligned(){
++
++		int probobility__BIGGEST_ALIGNMENT__ = 38;
++		bool use__BIGGEST_ALIGNMENT__ = rnd_flipcoin(probobility__BIGGEST_ALIGNMENT__);
++		if (use__BIGGEST_ALIGNMENT__)
++			cout << " __attribute__((aligned(__BIGGEST_ALIGNMENT__)))";
++		else{
++			int value = 0;
++			int power = rnd_upto(8);
++			if (power == 0)
++				power++;
++			switch (power){
++				case 1:
++					value = 2;
++					break;
++				case 2:
++					value = 4;
++					break;
++				case 3:
++					value = 8;
++					break;
++				case 4:
++					value = 16;
++					break;
++				case 5:
++					value = 32;
++					break;
++				case 6:
++					value = 64;
++					break;
++				case 7:
++					value = 128;
++					break;
++			}
++			cout << " __attribute__((aligned(" <<value << ")))";
++		}
++}
++
+ static int count_expr_key_var(const Expression* e)
+ {
+ 	if (e->term_type == eVariable) {
+@@ -184,6 +223,16 @@ ArrayVariable::CreateArrayVariable(const CGContext& cg_context, Block* blk, cons
+ 
+ 	// add it to global list or local variable list
+ 	blk? blk->local_vars.push_back(var) : VariableSelector::GetGlobalVariables()->push_back(var);
++
++	int prob = 0;
++        if(CGOptions::variable_attribute_aligned()){
++                prob = rnd_flipcoin(VariableAttriAlignedProb);
++        }
++        else
++                prob = 0;
++
++        if(prob)
++                var->var_attri_aligned = true;
+ 	return var;
+ }
+ 
+@@ -197,6 +246,7 @@ ArrayVariable::ArrayVariable(Block* blk, const std::string &name, const Type *ty
+ 	  sizes(sizes)
+ {
+ 	// nothing else to do
++	var_attri_aligned = false;
+ }
+ 
+ ArrayVariable::ArrayVariable(const ArrayVariable& av)
+@@ -208,6 +258,7 @@ ArrayVariable::ArrayVariable(const ArrayVariable& av)
+ 	init_values(av.init_values)
+ {
+ 	// nothing else to do
++	var_attri_aligned = false;
+ }
+ /*
+  *
+@@ -538,6 +589,10 @@ ArrayVariable::OutputDef(std::ostream &out, int indent) const
+ 			for (i=0; i<sizes.size(); i++) {
+ 				out << "[" << sizes[i] << "]";
+ 			}
++			if (var_attri_aligned){
++				ArrayVariable *av;
++				av->output_aligned();
++			}
+ 			out << " = " << build_initializer_str(init_strings) << ";";
+ 			outputln(out);
+ 		}
+diff --git a/src/ArrayVariable.h b/src/ArrayVariable.h
+index 9b9789e..6345187 100644
+--- a/src/ArrayVariable.h
++++ b/src/ArrayVariable.h
+@@ -83,6 +83,8 @@ public:
+ 	const vector<const Expression*>& get_init_values(void) const { return init_values;}
+ 	string build_initializer_str(const vector<string>& init_strings) const;
+ 	string build_init_recursive(size_t dimen, const vector<string>& init_strings) const;
++	bool var_attri_aligned;
++	void output_aligned();
+ 
+ 	const ArrayVariable* collective;
+ 	Block* parent;
+diff --git a/src/CGOptions.cpp b/src/CGOptions.cpp
+index 2c67b14..b649cc7 100644
+--- a/src/CGOptions.cpp
++++ b/src/CGOptions.cpp
+@@ -140,6 +140,7 @@ DEFINE_GETTER_SETTER_BOOL(math_notmp)
+ DEFINE_GETTER_SETTER_BOOL(longlong)
+ DEFINE_GETTER_SETTER_BOOL(int8)
+ DEFINE_GETTER_SETTER_BOOL(uint8)
++DEFINE_GETTER_SETTER_BOOL(variable_attribute_aligned)
+ DEFINE_GETTER_SETTER_BOOL(enable_float)
+ DEFINE_GETTER_SETTER_BOOL(strict_float)
+ DEFINE_GETTER_SETTER_BOOL(pointers)
+@@ -271,6 +272,7 @@ CGOptions::set_default_settings(void)
+ 	longlong(true);
+ 	int8(true);
+ 	uint8(true);
++	variable_attribute_aligned(false);
+ 	enable_float(false);
+ 	strict_float(false);
+ 	pointers(true);
+diff --git a/src/CGOptions.h b/src/CGOptions.h
+index 5d93e60..ef5c060 100644
+--- a/src/CGOptions.h
++++ b/src/CGOptions.h
+@@ -253,6 +253,9 @@ public:
+ 	static bool int8(void);
+ 	static bool int8(bool p);
+ 
++	static bool variable_attribute_aligned(void);
++        static bool variable_attribute_aligned(bool p);
++
+ 	static bool uint8(void);
+ 	static bool uint8(bool p);
+ 
+@@ -575,6 +578,7 @@ private:
+ 	static bool	longlong_;
+ 	static bool	int8_;
+ 	static bool	uint8_;
++	static bool	variable_attribute_aligned_;
+ 	static bool     Int128_;
+         static bool     UInt128_;
+ 	static bool	double_enable_;
+diff --git a/src/Probabilities.cpp b/src/Probabilities.cpp
+index 3b83866..fa4f736 100644
+--- a/src/Probabilities.cpp
++++ b/src/Probabilities.cpp
+@@ -486,6 +486,9 @@ Probabilities::set_single_name_maps()
+ 	// for choosing a builtin function
+ 	set_single_name("builtin_function_prob", pBuiltinFunctionProb);
+ 
++	// for choosing variable attributes unused
++	set_single_name("variable_attribute_aligned", pVariableAttriAligned);
++
+         //////////////////////////////////////////////////////////////////
+ 	// group for statement
+ 	set_single_name("statement_prob", pStatementProb);
+@@ -600,6 +603,7 @@ Probabilities::initialize_single_probs()
+ 	m[pAccessOnceVariableProb] = 20;
+ 	m[pInlineFunctionProb] = CGOptions::inline_function_prob();
+ 	m[pBuiltinFunctionProb] = CGOptions::builtin_function_prob();
++	m[pVariableAttriAligned] = 50;
+ 
+ 	std::map<ProbName, int>::iterator i;
+ 	for (i = m.begin(); i != m.end(); ++i) {
+diff --git a/src/Probabilities.h b/src/Probabilities.h
+index 63bbca8..13a0bbd 100644
+--- a/src/Probabilities.h
++++ b/src/Probabilities.h
+@@ -65,6 +65,7 @@ enum ProbName {
+ 	pAccessOnceVariableProb,
+ 	pInlineFunctionProb,
+ 	pBuiltinFunctionProb,
++	pVariableAttriAligned,
+ 
+ 	// group for statement
+ 	pStatementProb,
+@@ -226,6 +227,9 @@ enum ProbName {
+ #define BuiltinFunctionProb \
+ 	Probabilities::get_prob(pBuiltinFunctionProb)
+ 
++#define VariableAttriAlignedProb \
++	Probabilities::get_prob(pVariableAttriAligned)
++
+ //////////////////////////////////////////////////
+ #define UNARY_OPS_PROB_FILTER \
+ 	Probabilities::get_prob_filter(pUnaryOpsProb)
+diff --git a/src/RandomProgramGenerator.cpp b/src/RandomProgramGenerator.cpp
+index b65a818..c23f4ae 100644
+--- a/src/RandomProgramGenerator.cpp
++++ b/src/RandomProgramGenerator.cpp
+@@ -184,6 +184,7 @@ static void print_help()
+ 	cout << "  --typeof | --no-typeof : enable | disable typeof for replacing datatype (disable by default)." << endl << endl;
+ 	cout << "  --int128 | --no-int128: enable | disable generate__int128 as datatype extension (disabled by default)." << endl << endl;
+         cout << "  --uint128 | --no-uint128: enable | disable generate unsigned __int128 as datatype extension (disabled by default)." << endl << endl;
++	cout << "  --variable-attribute-aligned | --no-variable-attribute-aligned: enable | disable generate variable attribute aligned (disabled by default)." << endl << endl;
+ 	cout << "  --double | --no-double: enable | disable generate double as data type extension (disabled by default)." << endl << endl;
+ 	// numbered controls
+ 	cout << "  --max-array-dim <num>: limit array dimensions to <num>. (default 3)" << endl << endl;
+@@ -817,6 +818,17 @@ main(int argc, char **argv)
+ 			continue;
+ 		}
+ 
++		if (strcmp (argv[i], "--variable-attribute-aligned") == 0) {
++                        CGOptions::variable_attribute_aligned(true);
++                        continue;
++                }
++
++                if (strcmp (argv[i], "--no-variable-attribute-aligned") == 0) {
++                        CGOptions::variable_attribute_aligned(false);
++                        continue;
++                }
++
++
+ 		if (strcmp (argv[i], "--loc-labels") == 0) {
+ 			CGOptions::local_labels(true);
+ 			continue;
+diff --git a/src/Type.cpp b/src/Type.cpp
+index 091d85c..8ef4be6 100644
+--- a/src/Type.cpp
++++ b/src/Type.cpp
+@@ -72,6 +72,45 @@ static vector<Type *> AllTypes;
+ static vector<Type *> derived_types;
+ 
+ //////////////////////////////////////////////////////////////////////
++
++void Type::output_aligned(){
++
++		int probobility__BIGGEST_ALIGNMENT__ = 38;
++		bool use__BIGGEST_ALIGNMENT__ = rnd_flipcoin(probobility__BIGGEST_ALIGNMENT__);
++		if (use__BIGGEST_ALIGNMENT__)
++			cout << " __attribute__((aligned(__BIGGEST_ALIGNMENT__)))";
++		else{
++			int value = 0;
++			int power = rnd_upto(8);
++			if (power == 0)
++				power++;
++			switch (power){
++				case 1:
++					value = 2;
++					break;
++				case 2:
++					value = 4;
++					break;
++				case 3:
++					value = 8;
++					break;
++				case 4:
++					value = 16;
++					break;
++				case 5:
++					value = 32;
++					break;
++				case 6:
++					value = 64;
++					break;
++				case 7:
++					value = 128;
++					break;
++			}
++			cout << " __attribute__((aligned(" <<value << ")))";
++		}
++}
++
+ class NonVoidTypeFilter : public Filter
+ {
+ public:
+@@ -292,6 +331,7 @@ Type::Type(eSimpleType simple_type) :
+ 	has_assign_ops_(false),
+ 	has_implicit_nontrivial_assign_ops_(false)
+ {
++	var_attri_aligned_for_struct =false;
+ 	// Nothing else to do.
+ }
+ 
+@@ -311,6 +351,7 @@ Type::Type(vector<const Type*>& struct_fields, bool isStruct, bool packed,
+     qfers_(qfers),
+     bitfields_length_(fields_length)
+ {
++	var_attri_aligned_for_struct =false;
+     static unsigned int sequence = 0;
+ 	if (isStruct)
+         eType = eStruct;
+@@ -332,6 +373,7 @@ Type::Type(const Type* t) :
+     has_assign_ops_(false),
+     has_implicit_nontrivial_assign_ops_(false)
+ {
++	var_attri_aligned_for_struct =false;
+ 	// Nothing else to do.
+ }
+ 
+@@ -1250,6 +1292,17 @@ GenerateAllTypes(void)
+ 		    AllTypes.push_back(ty);
+ 	    }
+     }
++	//we are setting the probability , JOYTO- use CLI option for below block
++    if (CGOptions::variable_attribute_aligned()){
++	for (int i=0; i<AllTypes.size(); i++)
++	{
++        	Type* t = AllTypes[i];
++	        if ( (t->eType == eStruct || t->eType == eUnion)) {
++        	    	if(rnd_flipcoin(VariableAttriAlignedProb))
++				t->var_attri_aligned_for_struct = true;
++       		}
++   	}
++   }
+ }
+ 
+ // ---------------------------------------------------------------------
+@@ -1938,7 +1991,14 @@ void OutputStructUnion(Type* type, std::ostream &out)
+ 			}
+ 			else {
+ 				type->qfers_[i].output_qualified_type(field, out);
+-				out << " f" << j++ << ";";
++				out << " f" << j++ ;
++//				------
++	if (type->var_attri_aligned_for_struct){
++		Type *type;
++		type->output_aligned();
++	}
++//				------
++				out << ";";
+ 			}
+ 			really_outputln(out);
+         }
+@@ -1952,7 +2012,12 @@ void OutputStructUnion(Type* type, std::ostream &out)
+ 			OutputUnionAssignOps(type, out, true);
+ 		}
+ 
+-        out << "};";
++        out << "}";
++	if (type->var_attri_aligned_for_struct){
++		Type *type;
++		type->output_aligned();
++	}
++	out << ";";
+ 		really_outputln(out);
+         if (type->packed_) {
+ 		if (CGOptions::ccomp()) {
+diff --git a/src/Type.h b/src/Type.h
+index 7c03240..5b29a11 100644
+--- a/src/Type.h
++++ b/src/Type.h
+@@ -273,7 +273,8 @@ public:
+ 	std::string printf_directive(void) const;
+ 	static Type* find_pointer_type(const Type* t, bool add);
+ 	static Type* find_type(const Type* t);
+-
++	bool var_attri_aligned_for_struct;
++	void output_aligned();
+ // private:
+ 	eTypeDesc eType;
+ 	const Type *ptr_type;
+diff --git a/src/Variable.cpp b/src/Variable.cpp
+index 871ea01..604f278 100644
+--- a/src/Variable.cpp
++++ b/src/Variable.cpp
+@@ -78,6 +78,45 @@ unsigned long Variable::ctrl_vars_count;
+ 
+ const char Variable::sink_var_name[] = "csmith_sink_";
+ 
++void Variable::output_aligned(){
++
++		int probobility__BIGGEST_ALIGNMENT__ = 38;
++		bool use__BIGGEST_ALIGNMENT__ = rnd_flipcoin(probobility__BIGGEST_ALIGNMENT__);
++		if (use__BIGGEST_ALIGNMENT__)
++			cout << " __attribute__((aligned(__BIGGEST_ALIGNMENT__)))";
++		else{
++			int value = 0;
++			int power = rnd_upto(8);
++			if (power == 0)
++				power++;
++			switch (power){
++				case 1:
++					value = 2;
++					break;
++				case 2:
++					value = 4;
++					break;
++				case 3:
++					value = 8;
++					break;
++				case 4:
++					value = 16;
++					break;
++				case 5:
++					value = 32;
++					break;
++				case 6:
++					value = 64;
++					break;
++				case 7:
++					value = 128;
++					break;
++			}
++			cout << " __attribute__((aligned(" <<value << ")))";
++		}
++
++}
++
+ //////////////////////////////////////////////////////////////////////////////
+ 
+ int find_variable_in_set(const vector<const Variable*>& set, const Variable* v)
+@@ -435,6 +474,7 @@ Variable::Variable(const std::string &name, const Type *type,
+ 	  field_var_of(isFieldVarOf), isArray(false),
+ 	  qfer(isConsts, isVolatiles)
+ {
++	var_attri_aligned = false;
+ 	// nothing else to do
+ 	is_typeof=false;
+ }
+@@ -450,6 +490,7 @@ Variable::Variable(const std::string &name, const Type *type, const Expression*
+ 	  field_var_of(0), isArray(false),
+ 	  qfer(*qfer)
+ {
++	var_attri_aligned = false;
+ 	// nothing else to do
+ }
+ 
+@@ -462,6 +503,7 @@ Variable::Variable(const std::string &name, const Type *type, const Expression*
+ 	  isArray(isArray),
+ 	  qfer(*qfer)
+ {
++	var_attri_aligned = false;
+ 	// nothing else to do
+ 	is_typeof=false;
+ }
+@@ -679,7 +721,12 @@ Variable::OutputDef(std::ostream &out, int indent) const
+ 	}
+ 	output_qualified_type(out);
+ 
+-	out << get_actual_name() << " = ";
++	out << get_actual_name();
++	if (var_attri_aligned){
++		Variable *var;
++		var->output_aligned();
++	}
++	out << " = ";
+ 	assert(init);
+ 	init->Output(out);
+ 	out << ";";
+diff --git a/src/Variable.h b/src/Variable.h
+index 91b18d2..4fd61dd 100644
+--- a/src/Variable.h
++++ b/src/Variable.h
+@@ -137,6 +137,8 @@ public:
+ 	virtual void OutputLowerBound(std::ostream &) const;
+ 	virtual void OutputUpperBound(std::ostream &) const;
+ 
++	void output_aligned();
++
+ 	static size_t GetMaxArrayDimension(const vector<Variable*>& vars);
+ 
+ 	vector<Variable *> field_vars;    // field variables for struct/unions
+@@ -160,6 +162,7 @@ public:
+ 
+ 	static const char sink_var_name[];
+ //changehere
++	bool var_attri_aligned;
+ 	bool is_typeof= false;
+ 	bool is_typeof_used_param = false;
+ 	bool is_typeof_used_local = false;
+diff --git a/src/VariableSelector.cpp b/src/VariableSelector.cpp
+index 5349f1e..caaf0eb 100644
+--- a/src/VariableSelector.cpp
++++ b/src/VariableSelector.cpp
+@@ -552,6 +552,16 @@ VariableSelector::GenerateNewGlobal(Effect::Access access, const CGContext &cg_c
+ 		GlobalNonvolatilesList.push_back(var);
+ 	}
+ 	var_created = true;
++
++	int prob = 0;
++        if(CGOptions::variable_attribute_aligned()){
++                prob = rnd_flipcoin(VariableAttriAlignedProb);
++        }
++        else
++                prob = 0;
++
++        if(prob)
++                var->var_attri_aligned = true;
+ 	return var;
+ 
+ }
+@@ -580,7 +590,16 @@ VariableSelector::GenerateNewNonArrayGlobal(Effect::Access access, const CGConte
+ 	if (!var_qfer.is_volatile()) {
+ 		GlobalNonvolatilesList.push_back(var);
+ 	}
+-	var_created = true;
++
++	int prob = 0;
++        if(CGOptions::variable_attribute_aligned()){
++                prob = rnd_flipcoin(VariableAttriAlignedProb);
++        }
++        else
++                prob = 0;
++
++        if(prob)
++                var->var_attri_aligned = true;
+ 	return var;
+ }
+ 
+@@ -923,6 +942,16 @@ VariableSelector::GenerateNewParentLocal(Block &block,
+ 	FactMgr* fm = get_fact_mgr(&cg_context);
+ 	fm->add_new_var_fact_and_update_inout_maps(blk, var->get_collective());
+ 	var_created = true;
++
++	int prob = 0;
++        if(CGOptions::variable_attribute_aligned()){
++                prob = rnd_flipcoin(VariableAttriAlignedProb);
++        }
++        else
++                prob = 0;
++
++        if(prob)
++                var->var_attri_aligned = true;
+ 	return var;
+ }
+ 
