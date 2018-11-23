@@ -1,0 +1,135 @@
+diff --git a/src/CGOptions.cpp b/src/CGOptions.cpp
+index 2c67b14..7147f85 100644
+--- a/src/CGOptions.cpp
++++ b/src/CGOptions.cpp
+@@ -209,7 +209,7 @@ DEFINE_GETTER_SETTER_BOOL(computed_goto);
+ DEFINE_GETTER_SETTER_BOOL(tm_relaxed);
+ 
+ DEFINE_GETTER_SETTER_BOOL(type_of);
+-
++DEFINE_GETTER_SETTER_BOOL(label_attribute_hot_cold)
+ void
+ CGOptions::set_default_builtin_kinds()
+ {
+@@ -332,6 +332,7 @@ CGOptions::set_default_settings(void)
+ 	computed_goto(false);
+ 	tm_relaxed(false);
+ 	type_of(false);
++	label_attribute_hot_cold(false);
+ }
+ 
+ // Add options necessary for cpp 
+diff --git a/src/CGOptions.h b/src/CGOptions.h
+index 5d93e60..a22cb66 100644
+--- a/src/CGOptions.h
++++ b/src/CGOptions.h
+@@ -386,6 +386,9 @@ public:
+ 
+ 	static bool tm_relaxed(void);
+ 	static bool tm_relaxed(bool p);
++
++	static bool label_attribute_hot_cold(void);
++	static bool label_attribute_hot_cold(bool p);
+ 	/////////////////////////////////////////////////////////
+ 	static void set_default_settings(void);
+ 
+@@ -654,6 +657,7 @@ private:
+ 	//extensions
+ 	static bool computed_goto_;
+ 	static bool tm_relaxed_;
++	static bool label_attribute_hot_cold_;
+ private:
+ 	CGOptions(void);
+ 	CGOptions(CGOptions &cgo);
+diff --git a/src/Probabilities.cpp b/src/Probabilities.cpp
+index 3b83866..eb3f0a4 100644
+--- a/src/Probabilities.cpp
++++ b/src/Probabilities.cpp
+@@ -486,6 +486,9 @@ Probabilities::set_single_name_maps()
+ 	// for choosing a builtin function
+ 	set_single_name("builtin_function_prob", pBuiltinFunctionProb);
+ 
++	// for choosing label attribute hot/cold prob
++	set_single_name("label_attributes_hot_cold_prob", pLabelAttriHotColdProb);
++
+         //////////////////////////////////////////////////////////////////
+ 	// group for statement
+ 	set_single_name("statement_prob", pStatementProb);
+@@ -600,6 +603,7 @@ Probabilities::initialize_single_probs()
+ 	m[pAccessOnceVariableProb] = 20;
+ 	m[pInlineFunctionProb] = CGOptions::inline_function_prob();
+ 	m[pBuiltinFunctionProb] = CGOptions::builtin_function_prob();
++	m[pLabelAttriHotColdProb] = 100;
+ 
+ 	std::map<ProbName, int>::iterator i;
+ 	for (i = m.begin(); i != m.end(); ++i) {
+diff --git a/src/Probabilities.h b/src/Probabilities.h
+index 63bbca8..76cd8cf 100644
+--- a/src/Probabilities.h
++++ b/src/Probabilities.h
+@@ -65,6 +65,7 @@ enum ProbName {
+ 	pAccessOnceVariableProb,
+ 	pInlineFunctionProb,
+ 	pBuiltinFunctionProb,
++	pLabelAttriHotColdProb,
+ 
+ 	// group for statement
+ 	pStatementProb,
+@@ -226,6 +227,9 @@ enum ProbName {
+ #define BuiltinFunctionProb \
+ 	Probabilities::get_prob(pBuiltinFunctionProb)
+ 
++#define LabelAttriHotColdProb \
++	Probabilities::get_prob(pLabelAttriHotColdProb)
++
+ //////////////////////////////////////////////////
+ #define UNARY_OPS_PROB_FILTER \
+ 	Probabilities::get_prob_filter(pUnaryOpsProb)
+diff --git a/src/RandomProgramGenerator.cpp b/src/RandomProgramGenerator.cpp
+index b65a818..8d30554 100644
+--- a/src/RandomProgramGenerator.cpp
++++ b/src/RandomProgramGenerator.cpp
+@@ -185,6 +185,7 @@ static void print_help()
+ 	cout << "  --int128 | --no-int128: enable | disable generate__int128 as datatype extension (disabled by default)." << endl << endl;
+         cout << "  --uint128 | --no-uint128: enable | disable generate unsigned __int128 as datatype extension (disabled by default)." << endl << endl;
+ 	cout << "  --double | --no-double: enable | disable generate double as data type extension (disabled by default)." << endl << endl;
++	cout << "  --label-attribute-hot-cold | --label-attribute-hot-cold: enable | disable generate label attribute __attribute__((hot)) | __attribute__((cold)) (disabled by default)." << endl << endl;
+ 	// numbered controls
+ 	cout << "  --max-array-dim <num>: limit array dimensions to <num>. (default 3)" << endl << endl;
+ 	cout << "  --max-array-len-per-dim <num>: limit array length per dimension to <num> (default 10)." << endl << endl;
+@@ -817,6 +818,16 @@ main(int argc, char **argv)
+ 			continue;
+ 		}
+ 
++		if (strcmp (argv[i], "--label-attribute-hot-cold") == 0) {
++			CGOptions::label_attribute_hot_cold(true);
++			continue;
++		}
++
++		if (strcmp (argv[i], "--no-label-attribute-hot-cold") == 0) {
++			CGOptions::label_attribute_hot_cold(false);
++			continue;
++		}
++
+ 		if (strcmp (argv[i], "--loc-labels") == 0) {
+ 			CGOptions::local_labels(true);
+ 			continue;
+diff --git a/src/Statement.cpp b/src/Statement.cpp
+index 95b86f0..9353b19 100644
+--- a/src/Statement.cpp
++++ b/src/Statement.cpp
+@@ -951,7 +951,13 @@ Statement::pre_output(std::ostream &out, FactMgr* /* fm */, int indent) const
+ 	vector<const StatementGoto*> gotos;
+ 	if (find_jump_sources(gotos)) {
+ 		assert(gotos.size() > 0);
+-		out << gotos[0]->label << ":" << endl;
++		out << gotos[0]->label << ":";
++		if (CGOptions::label_attribute_hot_cold()){
++			if (rnd_flipcoin(LabelAttriHotColdProb)){
++				rnd_flipcoin(50) ? out << "__attribute__((hot))" : out << "__attribute__((cold))";
++			}
++		}
++		out << endl;
+ 		return 1;
+ 		//for (j=0; j<gotos.size(); j++) {
+ 		//	gotos[j]->output_skipped_var_inits(out, indent);
