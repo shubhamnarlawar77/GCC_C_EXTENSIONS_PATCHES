@@ -1,0 +1,2124 @@
+Only in .: AbsExtension.o
+diff ./AbsProgramGenerator.cpp ../../../remove_warnings/original/csmith/src/AbsProgramGenerator.cpp
+62d61
+< 		//returned value is of class DefaultProgramGenerator,pointer now points to DefaultProgramGenerator class
+66c65
+< 	AbsProgramGenerator::current_generator_->initialize();//of class DefaultProgramGenerator
+---
+> 	AbsProgramGenerator::current_generator_->initialize();
+Only in .: AbsProgramGenerator.o
+Only in .: AbsRndNumGenerator.o
+diff ./ArrayVariable.cpp ../../../remove_warnings/original/csmith/src/ArrayVariable.cpp
+67,105d66
+< 
+< void ArrayVariable::output_aligned(){
+< 
+< 		int probobility__BIGGEST_ALIGNMENT__ = 38;
+< 		bool use__BIGGEST_ALIGNMENT__ = rnd_flipcoin(probobility__BIGGEST_ALIGNMENT__);
+< 		if (use__BIGGEST_ALIGNMENT__)
+< 			cout << " __attribute__((aligned(__BIGGEST_ALIGNMENT__)))";
+< 		else{
+< 			int value = 0;
+< 			int power = rnd_upto(8);
+< 			if (power == 0)
+< 				power++;
+< 			switch (power){
+< 				case 1:
+< 					value = 2;
+< 					break;
+< 				case 2:
+< 					value = 4;
+< 					break;
+< 				case 3:
+< 					value = 8;
+< 					break;
+< 				case 4:
+< 					value = 16;
+< 					break;
+< 				case 5:
+< 					value = 32;
+< 					break;
+< 				case 6:
+< 					value = 64;
+< 					break;
+< 				case 7:
+< 					value = 128;
+< 					break;
+< 			}
+< 			cout << " __attribute__((aligned(" <<value << ")))";
+< 		}
+< }
+< 
+226,240d186
+< 
+< 	int prob = 0;
+<         if(CGOptions::variable_attribute_unused()){
+<                 prob = rnd_flipcoin(VariableAttriUnusedProb);
+<         }
+<         else
+<                 prob = 0;
+< 
+<         if(prob)
+<                 var->array_var_attri_unused = true;
+< 
+<         if (CGOptions::variable_attribute_aligned()){
+<                  if (rnd_flipcoin(VariableAttriAlignedProb))
+<                  var->var_attri_aligned = true;
+< 	}
+254,255d199
+< 	array_var_attri_unused = false;
+< 	var_attri_aligned = false;
+267,268d210
+< 	array_var_attri_unused = false;
+< 	var_attri_aligned = false;
+599,604d540
+< 			if (var_attri_aligned){
+<                                 ArrayVariable *av;
+<                                 av->output_aligned();
+<                         }
+< 			if (array_var_attri_unused)
+< 				out << " __attribute__((unused))";
+diff ./ArrayVariable.h ../../../remove_warnings/original/csmith/src/ArrayVariable.h
+86,89d85
+< 	bool var_attri_aligned;
+< 	void output_aligned();
+< 
+< 	bool array_var_attri_unused;
+Only in .: ArrayVariable.o
+diff ./Block.cpp ../../../remove_warnings/original/csmith/src/Block.cpp
+67,68c67
+< #include <string>
+< #include <vector>
+---
+> 
+119d117
+< 
+133c131
+< 	//max_block_size was set in CGOptions during CLI argument passing 
+---
+> 
+153d150
+< 		cout << "\nerror" ;
+166c163
+< 		b->stms.push_back(s);//*the s is surely correct*//
+---
+> 		b->stms.push_back(s);
+170a168
+> 
+172d169
+< 		cout << "\nerror";
+187d183
+< 		cout << "\nerror" ;
+195,196c191
+< 		cout << "\nerror" ;
+< 		curr_func->stack.pop_back();
+---
+> 		//curr_func->stack.pop_back();
+204,229d198
+< 
+< 	//*changehere*//
+< 	if(CGOptions::computed_goto()){
+< 		if(curr_func->blocks[0]->stm_id==b->stm_id){
+< 			std::vector<string> labels;
+< 			labels.clear();//vimp otherwise gives UB,gives unknown labels
+< 			curr_func->blocks[0]->find_contained_labels(labels);
+< 			string ss="";
+< 			for (std::vector<string>::iterator itr=labels.begin();itr!=labels.end();itr++) {
+< 				ss.clear();
+< 				ss += "&&";
+< 				ss += *itr;
+< 				curr_func->blocks[0]->addr_labels.push_back(ss);//only adds in the main array related to function.
+< 			}
+< 			//__________________________________________________________
+< 			for (size_t i=0; i<fm->cfg_edges.size();i++) {
+< 				const CFGEdge* e = fm->cfg_edges[i];
+< 				if(e->src->eType == eGoto) {
+< 					const StatementGoto* sg = dynamic_cast<const StatementGoto* >(e->src);
+< 					assert(sg);
+< 					sg->change_label(curr_func->blocks[0]->addr_labels);
+< 				}
+< 			}
+< 
+< 		}
+< 	}
+242c211
+< 	contains_tm_relaxed = 0;
+---
+> 
+255d223
+< 	contains_tm_relaxed = 0;
+325,334c293
+< 	out << "{";
+< 
+< 	if(CGOptions::stmt_expr()){
+< 		outputln(out);
+< 		indent++;
+< 		if(this->func_start_stmt_expr || (!this->contains_label) ){
+< 			output_tab(out, indent);
+< 			out << "({";
+< 		}
+< 	}
+---
+> 	out << "{ ";
+339,351d297
+< //*changehere*//
+< 
+< 	if (this->contains_tm_relaxed == 1){
+< 		outputln(out);
+< 		output_tab(out, indent);
+< 		cout << " __transaction_relaxed {";
+< 		outputln(out);
+< 	}
+< 
+< 	if(CGOptions::computed_goto()){
+< 		if(!this->addr_labels.empty())
+< 	      		this->print_label_addr_array(out,indent);
+< 	}
+355,365c301
+< 	if(CGOptions::local_labels()){
+< 		if( this->contains_label && !(this->labels_in_block.empty()) ){
+< 			indent++;
+< 			output_tab(out , indent);
+< 			out << "__label__ ";
+< 			outputlocal_labels();
+< 			out << ";";
+< 			outputln(out);
+< 			indent--;
+< 		}
+< 	}
+---
+> 
+376,392c312
+< 
+< 	if (this->contains_tm_relaxed == 1){
+< 		output_tab(out, indent);
+< 		cout << " }";
+< 		outputln(out);
+< 	}
+< 
+<        if(CGOptions::stmt_expr()){
+<                if(this->func_start_stmt_expr || ! (this->contains_label) ){
+<                        indent--;
+<                        outputln(out);
+<                        output_tab(out, indent);
+<                        out << "});" ;
+<                }
+<        }
+<        outputln(out);
+<        indent--;
+---
+> 	indent--;
+397d316
+< 
+888,897d806
+< void 
+< Block::print_label_addr_array(std::ostream &out , int indent) const{
+< 	ostringstream ss;
+< 	output_tab (out,indent);
+< 	cout << "/*\nNUMBER OF GOTO'S IN ABOVEE BLOCK:" << addr_labels.size()  << "*\/";
+< 	cout << "\nvoid *target[] = { ";
+< 	for(unsigned int i=0; i < addr_labels.size();i++){
+< 		i!=0 ? cout << ", " : cout << ""; 
+< 		cout << addr_labels[i];
+< 	}
+899,912d807
+< 	cout << "};\n";
+< }
+< void
+< Block::outputlocal_labels () const{
+< 		size_t i;
+< 		for (i =0 ;i < this->labels_in_block.size(); i++){
+< 			if (i == 0)
+< 				std::cout << this->labels_in_block[i];
+< 			else{
+< 				std::cout << " , ";
+< 				std::cout << this->labels_in_block[i];
+< 			}
+< 		}
+< }
+diff ./Block.h ../../../remove_warnings/original/csmith/src/Block.h
+80c80
+< 	    Block* random_parent_block(void);
+---
+>     Block* random_parent_block(void);
+83,88d82
+< 	//*changehere*//
+< 	std::vector<string> addr_labels;
+< 	std::vector<string> try_only_labels;
+< 	void print_label_addr_array(std::ostream&, int) const;
+< 	int contains_tm_relaxed ;
+< 
+128,132d121
+<         bool contains_label = false;
+<         std::vector<string> labels_in_block;
+<         void outputlocal_labels () const;
+< 
+<         bool func_start_stmt_expr = false;
+137c126
+< 	
+---
+> 
+Only in .: Block.o
+Only in .: Bookkeeper.o
+Only in .: CFGEdge.o
+Only in .: CGContext.o
+diff ./CGOptions.cpp ../../../remove_warnings/original/csmith/src/CGOptions.cpp
+126d125
+< DEFINE_GETTER_SETTER_BOOL(label_attribute_hot_cold)
+139,141d137
+< DEFINE_GETTER_SETTER_BOOL(variable_attribute_section)
+< DEFINE_GETTER_SETTER_BOOL(variable_attribute_aligned)
+< DEFINE_GETTER_SETTER_BOOL(stmt_expr)
+146d141
+< DEFINE_GETTER_SETTER_BOOL(variable_attribute_packed)
+169d163
+< DEFINE_GETTER_SETTER_BOOL(local_labels)
+202,205d195
+< DEFINE_GETTER_SETTER_BOOL(Int128);
+< DEFINE_GETTER_SETTER_BOOL(UInt128);
+< DEFINE_GETTER_SETTER_BOOL(double_enable);
+< DEFINE_GETTER_SETTER_BOOL(union_cast);
+212,219d201
+< DEFINE_GETTER_SETTER_BOOL(complex);
+< //extensions
+< DEFINE_GETTER_SETTER_BOOL(computed_goto);
+< DEFINE_GETTER_SETTER_BOOL(tm_relaxed);
+< 
+< DEFINE_GETTER_SETTER_BOOL(type_of);
+< DEFINE_GETTER_SETTER_BOOL(binary);
+< DEFINE_GETTER_SETTER_BOOL(variable_attribute_unused);
+277,279d258
+< 	stmt_expr(false);
+< 	variable_attribute_section(false);
+< 	variable_attribute_aligned(false);
+284,285d262
+< 	variable_attribute_packed(true);
+< 	label_attribute_hot_cold(false);
+328d304
+< 	local_labels(false);
+333d308
+< 	complex(false);
+335,338d309
+< 	Int128(false);
+< 	UInt128(false);
+< 	variable_attribute_unused(false);
+< 
+342c313
+< 	fast_execution(false);
+---
+>   fast_execution(false);
+345,350d315
+< 	//extensions
+< 	computed_goto(false);
+< 	tm_relaxed(false);
+< 	type_of(false);
+< 	binary(false);
+< 	union_cast(false);
+diff ./CGOptions.h ../../../remove_warnings/original/csmith/src/CGOptions.h
+247,253d246
+< 	static bool variable_attribute_section(void);
+<         static bool variable_attribute_section(bool p);
+< 
+< 
+< 	static bool stmt_expr(void);
+< 	static bool stmt_expr(bool p);
+< 
+260,265d252
+< 	static bool variable_attribute_packed(void);
+< 	static bool variable_attribute_packed(bool p);
+< 
+< 	static bool variable_attribute_aligned(void);
+<         static bool variable_attribute_aligned(bool p);
+< 
+269,287d255
+< 	static bool Int128(void);
+<         static bool Int128(bool p);
+< 
+< 	static bool variable_attribute_unused(void);
+<         static bool variable_attribute_unused(bool p);
+< 
+< 	static bool double_enable(void);
+< 	static bool double_enable(bool p);
+< 
+<         static bool UInt128(void);
+<         static bool UInt128(bool p);
+< 
+< 	static bool binary(void);
+<         static bool binary(bool p);
+< 
+< 
+<         static bool union_cast(void);
+<         static bool union_cast(bool p);
+< 
+291,293d258
+< 	static bool complex(void);
+<         static bool complex(bool p);
+< 
+384,387d348
+< 	static bool type_of(void);
+<         static bool type_of(bool p);
+< 
+< 
+405,413d365
+< //extensions
+< 	static bool computed_goto(void);
+< 	static bool computed_goto(bool p);
+< 
+< 	static bool tm_relaxed(void);
+< 	static bool tm_relaxed(bool p);
+< 
+< 	static bool label_attribute_hot_cold(void);
+< 	static bool label_attribute_hot_cold(bool p);
+509,511d460
+< 	static bool local_labels(void);
+< 	static bool local_labels(bool p);
+< 
+586d534
+< 	static bool	label_attribute_hot_cold_;
+599d546
+< 	static bool	stmt_expr_;
+603d549
+< 	static bool	variable_attribute_packed_;
+605,611d550
+< 	static bool	variable_attribute_section_;
+< 	static bool     variable_attribute_aligned_;
+< 	static bool     Int128_;
+<         static bool     UInt128_;
+< 	static bool	binary_;
+< 	static bool	double_enable_;
+< 	static bool	union_cast_;
+613d551
+< 	static bool	complex_;
+637d574
+< 	static bool local_labels_;
+653,654d589
+<         static bool type_of_;
+< 
+664d598
+< 
+685,689d618
+< 
+< 	//extensions
+< 	static bool computed_goto_;
+< 	static bool tm_relaxed_;
+< 	static bool variable_attribute_unused_;
+705d633
+< 
+Only in .: CGOptions.o
+Only in .: CompatibleChecker.o
+diff ./Constant.cpp ../../../remove_warnings/original/csmith/src/Constant.cpp
+99,138d98
+< //--------------------------------------------------------------
+< string HexToBinary(string q ){
+< 	std::ostringstream oss;
+< 	size_t i;
+< 	for (i=0;i< q.size() ; i++){//no ox prefix added yet
+< 	if (q[i] == '0')
+< 		oss << "0000";
+< 	else if (q[i] == '1')
+< 			oss<<"0001";
+< 	else if (q[i] == '2')
+< 			oss<<"0010";
+< 	else if (q[i] == '3')
+< 			oss<<"0011";
+< 	else if (q[i] == '4')
+< 			oss<<"0100";
+< 	else if (q[i] == '5')
+< 			oss<<"0101";
+< 	else if (q[i] == '6')
+< 			oss<<"0110";
+< 	else if (q[i] == '7')
+< 			oss<<"0111";
+< 	else if (q[i] == '8')
+< 			oss<<"1000";
+< 	else if (q[i] == '9')
+< 			oss<<"1001";
+< 	else if (q[i] == 'A')
+< 			oss<<"1010";
+< 	else if (q[i] == 'B')
+< 			oss<<"1011";
+< 	else if (q[i] == 'C')
+< 			oss<<"1100";
+< 	else if (q[i] == 'D')
+< 			oss<<"1101";
+< 	else if (q[i] == 'E')
+< 			oss<<"1110";
+< 	else if (q[i] == 'F')
+< 			oss<<"1111";
+< 	}
+< 	return oss.str();
+< }
+143,161c103,108
+<         string ch;
+<         int prob = 0;
+<         if(CGOptions::binary()){
+<                 prob = rnd_flipcoin(70);
+<         }
+<         else
+<                 prob = 0;
+< 
+<         if(prob){
+<                 string hex = RandomHexDigits( 4 ) ;
+<                 string binary = HexToBinary(hex);
+<                 ch = "0b" + binary;
+<                 return ch;
+<         }
+<         if (CGOptions::ccomp() || !CGOptions::longlong())
+<                 ch = string("0x") + RandomHexDigits(2);
+<         else
+<                 ch = string("0x") + RandomHexDigits(2) + "L";
+<         return ch;
+---
+> 	string ch;
+> 	if (CGOptions::ccomp() || !CGOptions::longlong())
+> 		ch = string("0x") + RandomHexDigits(2);
+> 	else
+> 		ch = string("0x") + RandomHexDigits(2) + "L";
+> 	return ch;
+163c110,111
+< // ----------------------------------------------------------------
+---
+> 
+> // --------------------------------------------------------------
+167d114
+< 	int prob = 0;
+169,181d115
+< 	if(CGOptions::binary()){
+< 		prob = rnd_flipcoin(70);
+< 	}
+< 	else
+< 		prob = 0;
+< 
+< 	if(prob){
+<                 string hex = RandomHexDigits( 8 ) ;
+<                 string binary = HexToBinary(hex);
+<                 val = "0b" + binary + "L";
+< 		return val;
+<         }
+< 
+183d116
+< 
+186,208d118
+< 	else{
+< 		val = "0x" + RandomHexDigits(8) + "L";
+< 	}
+< 	return val;
+< }
+< 
+< static string
+< GenerateRandomInt128Constant(void)
+< {
+< 	int prob = 0;
+<         if(CGOptions::binary()){
+<                 prob = rnd_flipcoin(70);
+<         }
+<         else
+<                 prob = 0;
+< 
+< 	string val;
+< 	if(prob){
+< 		string hex = RandomHexDigits( 16 ) ;
+<                 string binary = HexToBinary(hex);
+<                 val = "0b" + binary;
+< 
+< 	}
+210c120
+< 		val = "0x" + RandomHexDigits( 16 ) ;
+---
+> 		val = "0x" + RandomHexDigits( 8 ) + "L";
+213a124
+> 
+218d128
+< 	int prob = 0;
+220,232d129
+<         if(CGOptions::binary()){
+<                 prob = rnd_flipcoin(70);
+<         }
+<         else
+<                 prob = 0;
+< 
+< 	if(prob){
+<                 string hex = RandomHexDigits( 4 ) ;
+<                 string binary = HexToBinary(hex);
+<                 val = "0b" + binary;
+< 		return val;
+<         }
+< 
+246d142
+< 	int prob = 0;
+248,260d143
+<         if(CGOptions::binary()){
+<                 prob = rnd_flipcoin(70);
+<         }
+<         else
+<                 prob = 0;
+< 
+< 	if(prob){
+<                 string hex = RandomHexDigits( 8 ) ;
+<                 string binary = HexToBinary(hex);
+<                 val = "0b" + binary;
+< 		return val;
+<         }
+< 
+273,286d155
+< 	int prob = 0;
+< 	string val;
+<         if(CGOptions::binary()){
+<                 prob = rnd_flipcoin(70);
+<         }
+<         else
+<                 prob = 0;
+< 
+< 	if(prob){
+<                 string hex = RandomHexDigits( 16 ) ;
+<                 string binary = HexToBinary(hex);
+<                 val = "0b" + binary + "LL";
+< 		return val;
+<         }
+288,289c157
+< 
+< 		val = "0x" + RandomHexDigits( 16 ) + "LL";
+---
+> 	string val = "0x" + RandomHexDigits( 16 ) + "LL";
+309,329c177,179
+< 	int prob = 0;
+<         string val;
+<         if(CGOptions::binary()){
+<                 prob = rnd_flipcoin(70);
+<         }
+<         else
+<                 prob = 0;
+< 	if(prob){
+< 		string hex1 = RandomHexDigits(7);
+< 		string hex2 = RandomHexDigits(8);
+< 
+< 		string binary1 = HexToBinary(hex1);
+< 		string binary2 = HexToBinary(hex2);
+< 
+< 		val = binary1 + "." + binary2;
+< 		return val;
+< 	}
+< 	else{
+< 		int exp = pure_rnd_upto(100);
+< 		ostringstream oss;
+< 		oss << "0x" << RandomHexDigits(1) << "." << RandomHexDigits(6) << "p";
+---
+> 	int exp = pure_rnd_upto(100);
+> 	ostringstream oss;
+> 	oss << "0x" << RandomHexDigits(1) << "." << RandomHexDigits(6) << "p";
+331,338c181,185
+< 		if (pure_rnd_flipcoin(50)) {
+< 			oss << "+";
+< 		}
+< 		else {
+< 			oss << "-";
+< 		}
+< 		oss << exp;
+< 		return oss.str();
+---
+> 	if (pure_rnd_flipcoin(50)) {
+> 		oss << "+";
+> 	}
+> 	else {
+> 		oss << "-";
+339a187,188
+> 	oss << exp;
+> 	return oss.str();
+443,455c292,296
+<         ostringstream oss;
+<         oss.clear();
+< 	if (CGOptions::union_cast()){
+< 		unsigned int temp = type->sid;
+< 	        oss << "(union U";
+<         	oss << temp;
+<         	oss << ")";
+< 	}
+<         oss << " {";
+<         assert(type->eType == eUnion && type->fields.size() == type->bitfields_length_.size());
+<         oss << GenerateRandomConstant(type->fields[0]);
+<         oss << " }";
+<         return oss.str();
+---
+> 	string value = "{";
+> 	assert(type->eType == eUnion && type->fields.size() == type->bitfields_length_.size());
+> 	value += GenerateRandomConstant(type->fields[0]);
+> 	value += "}";
+> 	return value;
+542,544c383
+< 			case eInt128:    v = GenerateRandomInt128Constant();		break;
+< 			case eUInt128:   v = GenerateRandomInt128Constant();		break;
+< 		        case eDouble:    v = GenerateRandomFloatHexConstant();		break;
+---
+> 			// case eDouble:    v = GenerateRandomFloatConstant();		break;
+Only in .: Constant.o
+Only in .: CoverageTestExtension.o
+Only in .: CrestExtension.o
+Only in .: csmith
+diff ./CVQualifiers.cpp ../../../remove_warnings/original/csmith/src/CVQualifiers.cpp
+171,175c171
+< bool
+< CVQualifiers::match_typeof (const CVQualifiers& qfer) const
+< {
+< 	return is_consts == qfer.get_consts() && is_volatiles == qfer.get_volatiles();
+< }
+---
+> 
+582,617d577
+< //changehere
+< //removed type as not needed 
+< void
+< CVQualifiers::output_qualified_type_of_typeof(const Type* t, std::ostream &out) const
+< {
+< 	assert(t);
+< 	assert(sanity_check(t));
+< 	size_t i;
+< 	for (i=0; i<is_consts.size(); i++) {
+< 		if (i>0) {
+< 			out << "*";
+< 		}
+< 		if (is_consts[i]) {
+< 			if (!CGOptions::consts())
+< 				assert(0);
+< 			if (i > 0) out << " ";
+< 			out << "const ";
+< 		}
+< 		if (is_volatiles[i]) {
+< 			if (!CGOptions::volatiles())
+< 				assert(0);
+< 			if (i > 0) out << " ";
+< 			out << "volatile ";
+< 		}
+< 		if(this->is_qualifier_complex()){
+< 			if (!CGOptions::complex())
+< 				assert(0);
+< 			if (i > 0) out << " ";
+< 			out << "_Complex ";
+< 		}
+< 		if (i==0) {
+< 			out << "typeof(" << this->get_typeof_replace_var() << ")" ;
+< 			out << " ";
+< 		}
+< 	}
+< }
+642,647d601
+< 		if(is_qualifier_complex()){
+< 			if (!CGOptions::complex())
+< 				assert(0);
+< 			if (i > 0) out << " ";
+< 			out << "_Complex ";
+< 		}
+767,782d720
+< }
+< void 
+< CVQualifiers::set_typeof_replace_var(string global_var_name) const{
+<         typeof_replace_var=global_var_name;
+< }
+< string
+< CVQualifiers::get_typeof_replace_var() const{
+<         return typeof_replace_var;
+< }
+< void
+< CVQualifiers::set_complex(bool complex_value) const{
+< 	this->is_complex = complex_value;
+< }
+< bool
+< CVQualifiers::is_qualifier_complex() const {
+< 	return this->is_complex;
+diff ./CVQualifiers.h ../../../remove_warnings/original/csmith/src/CVQualifiers.h
+65d64
+< 	bool match_typeof (const CVQualifiers& qfer) const;
+91,92d89
+< 	//changehere
+< 	void output_qualified_type_of_typeof(const Type* t, std::ostream &out) const;
+98,104d94
+< 
+< //changehere
+< 	void set_typeof_replace_var(string global_var_name) const;
+< 	string get_typeof_replace_var() const;
+< 	mutable string typeof_replace_var="";
+< 	void set_complex(bool complex_value) const;
+< 	bool is_qualifier_complex() const;
+106d95
+< 	mutable bool is_complex = false;
+Only in .: CVQualifiers.o
+diff ./DefaultOutputMgr.cpp ../../../remove_warnings/original/csmith/src/DefaultOutputMgr.cpp
+199,201c199
+< /*
+< *Function actually outputs the random generated program,except the comment part of header section
+< */
+---
+> 
+Only in .: DefaultOutputMgr.o
+diff ./DefaultProgramGenerator.cpp ../../../remove_warnings/original/csmith/src/DefaultProgramGenerator.cpp
+76c76
+< 		output_mgr_ = DefaultOutputMgr::CreateInstance();//the pointer points to DefaultOutputMgr class.
+---
+> 		output_mgr_ = DefaultOutputMgr::CreateInstance();
+93c93,94
+< 	output_mgr_->OutputHeader(argc_, argv_, seed_);//output_mgr points to DefaultOutputMgr/DFS class,so function definition in that class and *NOT OF Output_mgr class*
+---
+> 	output_mgr_->OutputHeader(argc_, argv_, seed_);
+> 
+96c97
+< 	output_mgr_->Output();//this actually outputs the program generated from above
+---
+> 	output_mgr_->Output();
+Only in .: DefaultProgramGenerator.o
+Only in .: DefaultRndNumGenerator.o
+Only in .: DeltaMonitor.o
+Only in .: .deps
+Only in .: DepthSpec.o
+Only in .: DFSOutputMgr.o
+Only in .: DFSProgramGenerator.o
+Only in .: DFSRndNumGenerator.o
+Only in .: Effect.o
+Only in .: Error.o
+Only in .: ExpressionAssign.o
+Only in .: ExpressionComma.o
+diff ./Expression.cpp ../../../remove_warnings/original/csmith/src/Expression.cpp
+230,235d229
+< 	//we are disqualifying constant and Lhs on the right hand of operand,as they are very trival cases,ex int i=-19
+< 	if(CGOptions::stmt_expr()){
+< 		if(e->term_type !=eConstant || e->term_type != eLhs ){
+< 			e->expr_stmt_expr_true = true;
+< 		}
+< 	}
+311,315d304
+< 	if(CGOptions::stmt_expr()){
+< 		if(e->term_type !=eConstant || e->term_type != eLhs ){
+< 			e->expr_stmt_expr_true = true;
+< 		}
+< 	}
+Only in .: ExpressionFuncall.o
+diff ./Expression.h ../../../remove_warnings/original/csmith/src/Expression.h
+160c160
+< 	bool expr_stmt_expr_true= false;
+---
+> 
+Only in .: Expression.o
+diff ./ExpressionVariable.cpp ../../../remove_warnings/original/csmith/src/ExpressionVariable.cpp
+82,83d81
+< 		if (!type->is_double() && var->type->is_double())
+< 			continue;
+Only in .: ExpressionVariable.o
+Only in .: ExtensionMgr.o
+Only in .: ExtensionValue.o
+Only in .: FactMgr.o
+Only in .: Fact.o
+Only in .: FactPointTo.o
+Only in .: FactUnion.o
+Only in .: Filter.o
+Only in .: Finalization.o
+diff ./Function.cpp ../../../remove_warnings/original/csmith/src/Function.cpp
+69,71c69
+< #include "CFGEdge.h"
+< #include "StatementGoto.h"
+< #include "ArrayVariable.h"
+---
+> 
+399,400d396
+< 	is_para_typeof = false;
+< 	is_local_typeof = false;
+415,416d410
+< 	is_para_typeof = false;
+< 	is_local_typeof = false;
+419,421c413
+< /*
+< * nearly equivalent for make_first,but called internally for except first function
+< */
+---
+> 
+425,435d416
+< 	int prob = 0;
+< 	if(CGOptions::type_of())
+< 		prob = rnd_flipcoin(70);
+< 	else
+< 		prob = 0;
+< 
+< 	vector<Variable*> &globals = *VariableSelector::GetGlobalVariables();
+< 	//if global variables are present and randomly selected as true then do rest of jobs
+< 	int should_typeof_be_present = ( prob && globals.size()!=0 ) ;//keep value more for maximum generation
+< 
+< 
+448,450d428
+< 	//so the type of statement should be simple and randomly select the function for typeof is true and of cource cgoptions is set
+< 	// then set it for typeof= true and pass the replacing paramenters
+< 
+452,456d429
+< 
+< 	//changehere randomly set if typeof should be present or not for the function
+< 	if(type->eType == eSimple && should_typeof_be_present){
+< 		f->rv->is_typeof = true;		//make the variable as true
+< 	}
+461,464d433
+< 	if(rnd_flipcoin(66))
+< 		f->func_stmt_expr_true = true;
+< 	else
+< 		f->func_stmt_expr_true = false;
+469c438
+<  *actually this is invoked except first function
+---
+>  *
+482c451
+<  *we are not generating typeof for first function
+---
+>  *
+490c459
+< 	Function *f = new Function(RandomFunctionName(), ty);//pushes into the FuncList
+---
+> 	Function *f = new Function(RandomFunctionName(), ty);
+498c467
+< 	FactMgr* fm = new FactMgr(f);//assignes 'f' to 'Function*' in FactMgr class
+---
+> 	FactMgr* fm = new FactMgr(f);
+515,522d483
+< 
+< //does this function contain statement expressions
+< 	if(rnd_flipcoin(66))
+< 		f->func_stmt_expr_true = true;
+< 	else
+< 		f->func_stmt_expr_true = false;
+< //finding the labels inside blocks in function and storing them in labels_in_block
+< 	store_labels_in_block(f);
+579,583c540
+< 	if(rv->is_typeof)
+<                rv->qfer.output_qualified_type_of_typeof(return_type, out);
+<         else
+<                rv->qfer.output_qualified_type(return_type, out);
+< 
+---
+> 	rv->qfer.output_qualified_type(return_type, out);
+810c767
+< 	FactMgr* fm = new FactMgr(f);//assignes 'f' to 'Function*' in FactMgr class
+---
+> 	FactMgr* fm = new FactMgr(f);
+840c797
+< //CHANGEHERE
+---
+> 
+850,851d806
+< 
+< 
+856,857d810
+< 	/*only for block 0,as __tm_* will be for first block else could cause some goto into the __tm_* ,which causes UB.
+< 	*/
+868,894d820
+< 
+< 	if(CGOptions::tm_relaxed()){
+< 		//need to select at least one so for CLI options add '1'
+< 		unsigned int count_tm_relaxed = rnd_upto(FuncListSize()) + 1 ;//if size=10 then 1,2,....10 as 1 is added 
+< 		for (int i = count_tm_relaxed ; i>0 ; ) {
+< 			int index = rnd_upto(FuncListSize());
+< 			if( FuncList[index]->blocks[0]->contains_tm_relaxed == 0 ){//if unset then only set,TODO-needs to do && with atomic when implemented
+< 					FuncList[index]->blocks[0]->contains_tm_relaxed = 1 ;
+< 					i--;
+< 			}
+< 		}
+< 	}
+< 	if (CGOptions::stmt_expr()){
+< 		size_t i;
+< 		for (i =0 ;i < FuncList.size() ; i++){
+< 			if(FuncList[i]->func_stmt_expr_true){
+< 				Block *zero_blk = FuncList[i]->blocks[0];
+< 				zero_blk -> func_start_stmt_expr = true;
+< 			}
+< 		}
+< 	}
+< 
+< 	if(CGOptions::type_of()){
+< 		typeof_on_return_values ();//compulsorily generate for return types, so atleast something comes in program
+< 		typeof_on_func_parameters ();//but can/cannot for parameter types
+< 		typeof_on_local_variables();
+< 	}
+993,1220d918
+< void
+< store_labels_in_block(const Function *f){
+<        FactMgr* fm= get_fact_mgr_for_func(f);
+<        vector<const CFGEdge*> local_cfg_edges_goto;
+<        local_cfg_edges_goto.clear();
+< 	std::vector <string> goto_src_vector;
+< 	goto_src_vector.clear();
+<        for (size_t i =0 ;i < fm->cfg_edges.size(); i++){
+<                if(fm->cfg_edges[i]->src->eType == eGoto){
+<                         local_cfg_edges_goto.push_back( fm->cfg_edges[i] );
+< 			goto_src_vector.push_back (((StatementGoto*)(fm->cfg_edges[i]->src))->label);
+<                }
+<        }
+< 	bool dummy= false;
+<        for (size_t i=0;i<local_cfg_edges_goto.size();i++){
+< 		dummy = false;
+<                StatementGoto *sg = (StatementGoto*)local_cfg_edges_goto[i]->src;
+<                Block *blk = local_cfg_edges_goto[i]->dest->parent;
+<                Block *goto_block = sg->parent;
+< 		if(CGOptions::local_labels()){
+< 			int count_goto_for_label = std::count(goto_src_vector.begin(),goto_src_vector.end(),sg->label);
+< 			if ((count_goto_for_label <= 1)){
+<                 	       while(goto_block != f->blocks[0]){
+<         	                       if(goto_block == blk){
+< 	                                       blk->contains_label = true;
+< 						dummy = true;
+<                                 	       break;
+<                         	       }
+<                 	               goto_block = goto_block -> parent;
+<         	               }
+< 	                       if(goto_block == f->blocks[0] && goto_block == blk){
+<                         	       blk->contains_label = true;
+< 					dummy = true;
+<                 	       }
+<         	       }
+< 		}
+< 	        else{
+<         	        blk->contains_label = true;
+< 			dummy = true;
+< 		}
+<                std::vector<string>::iterator itr;
+<        	       itr = find(blk->labels_in_block.begin(),blk->labels_in_block.end(),sg->label);
+<                if( (itr == blk->labels_in_block.end()) && (blk->contains_label == 1) && dummy == true){
+<        	               blk->labels_in_block.push_back(sg->label);
+<                }
+<        	}
+< 	size_t i;
+<        for (i=0; i< f->blocks.size() ; i++){
+<                Block* b = f->blocks[i];
+<                if(b!=f->blocks[0] && b->contains_label){
+<                        while(b!=f->blocks[0]){
+<                                b->contains_label = true;
+<                                b=b->parent;
+<                       }
+<                }
+<        }
+< }
+< 
+< //changehere
+< 
+< Variable *
+< Function::find_global_to_insert_in_typeof(const Variable *para){       //now set values in qfer and not variable
+<        vector<Variable*> &globals = *VariableSelector::GetGlobalVariables();
+<        int global_count = globals.size();
+<        while(global_count > 0){
+<                int index_of_global_var = rnd_upto(globals.size());
+<                if(globals[index_of_global_var]->type == para->type && globals[index_of_global_var]->qfer.match_typeof(para->qfer) && globals[index_of_global_var]->type->eType == eSimple){
+<                        /*remianing to send type(only for pointer,search for what more?) will do once everything is working*/
+<                        //FuncList[i]->rv->qfer.set_typeof_replace_type(globals[index_of_global_var]->type);
+<                        return globals[index_of_global_var];
+<                }
+<        global_count--;
+<        }
+<        return NULL;       //element not found for the number of times we looped| element is not present
+< }
+< 
+< //changehere
+< void typeof_on_return_values(){
+< 
+<        vector<Variable*> &globals = *VariableSelector::GetGlobalVariables();
+< 	size_t i;
+<        for (i =0; i< FuncList.size(); i++){
+<                int global_count = globals.size();
+<                int flag=0;
+<                if(FuncList[i]->rv->is_typeof){
+<                        const Type *return_type = FuncList[i]->rv->type;
+<                        while(global_count > 0){
+<                                int index_of_global_var = rnd_upto(globals.size());
+<                                if(globals[index_of_global_var]->type == return_type && globals[index_of_global_var]->type->eType == eSimple ){
+<                                        if(!globals[index_of_global_var]->is_array_field())
+<                                                FuncList[i]->rv->qfer.set_typeof_replace_var(globals[index_of_global_var]->get_actual_name());
+<                                        else{
+<                                                ostringstream ss;
+<                                                ss.clear();
+<                                                std::vector<unsigned int> sizes;
+<                                                sizes.clear();//clear the sizes vector, so no previous values persist
+<                                                ss << globals[index_of_global_var]->get_actual_name();
+< 
+<                                                ArrayVariable *av = (ArrayVariable*)globals[index_of_global_var];
+<                                                sizes = av->get_sizes();
+< 						size_t i;
+<                                                for (i=0; i< sizes.size() ; i++){
+<                                                        ss << "[" << sizes[i] << "]";
+<                                                }
+<                                                FuncList[i]->rv->qfer.set_typeof_replace_var(ss.str());
+<                                        }
+<                                        /*remianing to send type(only for pointer,search for what more?) will do once everything is */
+<                                        //FuncList[i]->rv->qfer.set_typeof_replace_type(globals[index_of_global_var]->type);
+<                                        flag=1;//indicates typeof is surely going to be present
+<                                        break;
+<                                }
+<                        global_count--;
+<                        }
+<                        if(flag!=1){
+<                                FuncList[i]->rv->is_typeof=false;//we are now removing the tag of typeof from function,as nothing found
+<                        }
+<                }
+<        }
+< 
+< }
+< void typeof_on_func_parameters(){
+<        vector<Variable*> &globals = *VariableSelector::GetGlobalVariables();
+< 
+<        if(globals.size() > 0 && FuncList.size() > 1){
+<                int cnt_func_para_typeof = rnd_upto(FuncList.size());
+<                for (int i = 0; i< cnt_func_para_typeof ; i++){
+<                        int idx_func = rnd_upto(FuncList.size());
+<                        if(FuncList[idx_func]->param.size() != 0 ){
+<                                FuncList[idx_func]->is_para_typeof = true;//IMP
+< 
+<                                int cnt_para_with_typeof = rnd_upto(FuncList[idx_func]->param.size());
+<                                if(cnt_para_with_typeof == 0)
+<                                        cnt_para_with_typeof++; //we want atleast 1 parameter with typeof
+< 
+<                                int flag =0 ;
+<                                while(cnt_para_with_typeof > 0){
+<                                        int indx_para = rnd_upto(FuncList[idx_func]->param.size());
+<                                        Variable *para = FuncList[idx_func]->param[indx_para];
+<                                        Variable *glob_replace_var = FuncList[idx_func]->find_global_to_insert_in_typeof(para);
+<                                        if(glob_replace_var !=  NULL){
+<                                                flag =1;
+<                                                para->is_typeof_used_param  = true;
+<                                                if(!glob_replace_var->is_array_field()){
+<                                                        para->qfer.set_typeof_replace_var(glob_replace_var->get_actual_name());
+<                                                }
+<                                                else{
+<                                                        ostringstream ss;
+<                                                        ss.clear();
+<                                                        std::vector<unsigned int> sizes;
+<                                                        sizes.clear();//clear the sizes vector, so no previous values persist
+<                                                        ss << glob_replace_var->get_actual_name();
+< 
+<                                                        ArrayVariable *av = (ArrayVariable*)glob_replace_var;
+<                                                        sizes = av->get_sizes();
+< 							size_t i;
+<                                                        for (i=0; i< sizes.size() ; i++){
+<                                                                ss << "[" << sizes[i] << "]";
+<                                                        }
+<                                                        para->qfer.set_typeof_replace_var(ss.str());
+<                                                }
+<                                        }
+<                                cnt_para_with_typeof--;
+<                                }
+<                                if( flag==0 ){
+<                                        FuncList[idx_func]->is_para_typeof = false;
+<                                }
+<                        }
+<                }
+<        }
+< }
+< void typeof_on_local_variables(){
+<        vector<Variable*> &globals = *VariableSelector::GetGlobalVariables();
+< 
+<        if(globals.size() > 0 && FuncList.size() > 1){
+<                int cnt_func_local_typeof = rnd_upto(FuncList.size());
+<                for (int i = 0; i< cnt_func_local_typeof ; i++){
+<                        int idx_func = rnd_upto(FuncList.size());
+<                        if(FuncList[idx_func]->blocks.size() != 0 ){//obviously this won't happen as always atleast 1 block
+<                                FuncList[idx_func]->is_local_typeof = true;//IMP
+<                                int cnt_blocks_with_typeof = rnd_upto(FuncList[idx_func]->blocks.size());
+< //cout << "from total " << FuncList[idx_func]->blocks.size() << "selected are " << cnt_blocks_with_typeof;
+< //                             if(cnt_para_with_typeof == 0)
+< //                                     cnt_para_with_typeof++; //we want atleast 1 parameter with typeof
+< 
+<                                int flag =0 ;
+<                                while(cnt_blocks_with_typeof > 0){
+<                                        int indx_block = rnd_upto(FuncList[idx_func]->blocks.size());//========ok
+<                                if(FuncList[idx_func]->blocks[indx_block]->local_vars.size() > 0){
+< 
+<                                        int temp_local_var = rnd_upto(FuncList[idx_func]->blocks[indx_block]->local_vars.size());
+< 
+<                                        for(int i=0; i<temp_local_var; i++){
+<                                        int random_local_var = rnd_upto(FuncList[idx_func]->blocks[indx_block]->local_vars.size());
+<                                        Variable *local = FuncList[idx_func]->blocks[indx_block]->local_vars[random_local_var];//
+<                                        Variable *glob_replace_var = FuncList[idx_func]->find_global_to_insert_in_typeof(local);
+<                                        if(glob_replace_var !=  NULL){
+<                                                flag =1;
+<                                                local->is_typeof_used_local  = true;
+<                                                if(!glob_replace_var->is_array_field()){
+<                                                        local->qfer.set_typeof_replace_var(glob_replace_var->get_actual_name());
+<                                                }
+<                                                else{
+<                                                        ostringstream ss;
+<                                                        ss.clear();
+<                                                        std::vector<unsigned int> sizes;
+<                                                        sizes.clear();//clear the sizes vector, so no previous values persist
+<                                                        ss << glob_replace_var->get_actual_name();
+< 
+<                                                        ArrayVariable *av = (ArrayVariable*)glob_replace_var;
+<                                                        sizes = av->get_sizes();
+< 							size_t i;
+<                                                        for (i=0; i< sizes.size() ; i++){
+<                                                                ss << "[" << sizes[i] << "]";
+<                                                        }
+<                                                        local->qfer.set_typeof_replace_var(ss.str());
+<                                                }
+<                                        }
+<                                        }
+<                                }
+<                                cnt_blocks_with_typeof--;
+<                                }
+<                                if( flag==0 ){
+<                                        FuncList[idx_func]->is_local_typeof = false;
+<                                }
+<                        }
+<                }
+<        }
+< }
+diff ./Function.h ../../../remove_warnings/original/csmith/src/Function.h
+60,63d59
+< //changehere
+< void typeof_on_return_values();
+< void typeof_on_func_parameters();
+< void typeof_on_local_variables();
+128d123
+< 
+130,134d124
+< 	//extension
+< 	bool func_stmt_expr_true = false;
+<         Variable* find_global_to_insert_in_typeof(const Variable *para);
+<         bool is_para_typeof ;
+<         bool is_local_typeof;
+167c157
+< void store_labels_in_block(const Function *f);
+---
+> 
+Only in .: FunctionInvocationBinary.o
+Only in .: FunctionInvocation.o
+Only in .: FunctionInvocationUnary.o
+diff ./FunctionInvocationUser.cpp ../../../remove_warnings/original/csmith/src/FunctionInvocationUser.cpp
+251d250
+< 	store_labels_in_block(func);
+422,426d420
+< 	if (CGOptions::union_cast()){
+< 		const Type *type_of_parameter = & (expr->get_type());
+< 		if (type_of_parameter->eType == eUnion)
+< 			out << "( union " << "U" << type_of_parameter->sid << " )";
+< 	}
+Only in .: FunctionInvocationUser.o
+Only in .: Function.o
+Only in .: git_version.cpp
+Only in .: git_version.o
+Only in .: git_version.txt
+Only in .: KleeExtension.o
+diff ./Lhs.cpp ../../../remove_warnings/original/csmith/src/Lhs.cpp
+109c109
+< 		if (( !t->is_float() && var->type->is_float() ) || ( (!t->is_double() && var->type->is_double()) )  ) {
+---
+> 		if (!t->is_float() && var->type->is_float()) {
+Only in .: Lhs.o
+Only in .: .libs
+Only in .: LinearSequence.o
+Only in .: Makefile
+Only in .: MspFilters.o
+diff ./OutputMgr.cpp ../../../remove_warnings/original/csmith/src/OutputMgr.cpp
+296,298c296
+< 	if(CGOptions::complex()) {
+< 		out << "#include <complex.h>\n";
+< 	}
+---
+> 
+Only in .: OutputMgr.o
+Only in .: PartialExpander.o
+Only in .: platform.info
+Only in .: platform.o
+diff ./Probabilities.cpp ../../../remove_warnings/original/csmith/src/Probabilities.cpp
+489,503d488
+< 	// for choosing variable attribute unused
+< 	set_single_name("variable_attributes_prob", pVariableAttriUnused);
+< 
+< 	// for choosing variable attributes unused
+< 	set_single_name("variable_attribute_packed", pVariableAttriPackedProb);
+< 
+< 	// for choosing label attribute hot/cold prob
+< 	set_single_name("label_attributes_hot_cold_prob", pLabelAttriHotColdProb);
+< 
+< 	// for choosing variable attributes section
+< 	set_single_name("variable_attributes_section_prob", pVariableAttriSection);
+< 
+< 	// for choosing variable attributes unused
+< 	set_single_name("variable_attribute_aligned", pVariableAttriAligned);
+< 
+618,622d602
+< 	m[pVariableAttriUnused] = 50;
+< 	m[pVariableAttriPackedProb] = 80;
+< 	m[pLabelAttriHotColdProb] = 100;
+< 	m[pVariableAttriSection] = 90;
+< 	m[pVariableAttriAligned] = 50;
+678,684d657
+< /*	if (CGOptions::Int128() ) {
+< 		SET_SINGLE_NAME1("safe_ops_size_Int128", Int128, 1);
+< 	}
+< 	else {
+< 		SET_SINGLE_NAME1("safe_ops_size_Int128", Int128, 0);
+< 	}
+< */
+707,727d679
+< 	if (CGOptions::Int128()) {
+< 		SET_SINGLE_NAME("Int128_prob", Int128, 1);
+< 	}
+< 	else {
+< 		SET_SINGLE_NAME("Int128_prob", Int128, 0);
+< 	}
+< 
+< 	 if (CGOptions::UInt128()) {
+<                 SET_SINGLE_NAME("UInt128_prob", UInt128, 1);
+<         }
+<         else {
+<                 SET_SINGLE_NAME("UInt128_prob", UInt128, 0);
+<         }
+< 
+< 	if (CGOptions::double_enable()) {
+<                 SET_SINGLE_NAME("Double_prob", Double, 1);
+<         }
+<         else {
+<                 SET_SINGLE_NAME("Double_prob", Double, 0);
+<         }
+< 
+868a821
+> 
+diff ./Probabilities.h ../../../remove_warnings/original/csmith/src/Probabilities.h
+68,72d67
+< 	pVariableAttriUnused,
+< 	pVariableAttriPackedProb,
+< 	pLabelAttriHotColdProb,
+< 	pVariableAttriSection,
+< 	pVariableAttriAligned,
+147,149d141
+< 	pUInt128Prob,
+< 	pInt128Prob,
+< 	pDoubleProb,
+233,247d224
+< 
+< #define VariableAttriUnusedProb \
+< 	Probabilities::get_prob(pVariableAttriUnused)
+< 
+< #define VariableAttriPackedProb \
+< 	Probabilities::get_prob(pVariableAttriPackedProb)
+< 
+< #define LabelAttriHotColdProb \
+< 	Probabilities::get_prob(pLabelAttriHotColdProb)
+< 
+< #define VariableAttriSectionProb \
+< 	Probabilities::get_prob(pVariableAttriSection)
+< 
+< #define VariableAttriAlignedProb \
+< 	Probabilities::get_prob(pVariableAttriAligned)
+Only in .: Probabilities.o
+Common subdirectories: ./rand48 and ../../../remove_warnings/original/csmith/src/rand48
+Only in .: RandomNumber.o
+Only in .: random.o
+diff ./RandomProgramGenerator.cpp ../../../remove_warnings/original/csmith/src/RandomProgramGenerator.cpp
+178c178
+< 	
+---
+> 
+210,233d209
+< 	
+< 	//extensions
+< 	cout << "  -------------------------------------------GCC C Extensions-----------------------------------------" << endl << endl;
+< 	cout << "  --computed-goto | --no-computed-goto: enable | disable computed goto extension (disable by default)." << endl << endl;
+< 	cout << "  --tm-relaxed | --no-tm-relaxed : enable | disable transactional memory __transaction_relaxed extension (disable by default)." << endl << endl;
+< 	cout << "  --stmt_expr | --no-stmt_expr: enable | disable statement-expression extension. (disable by default)" << endl << endl;
+< 	cout << "  --typeof | --no-typeof : enable | disable typeof for replacing datatype (disable by default)." << endl << endl;
+< 	cout << "  --int128 | --no-int128: enable | disable generate__int128 as datatype extension (disabled by default)." << endl << endl;
+<         cout << "  --uint128 | --no-uint128: enable | disable generate unsigned __int128 as datatype extension (disabled by default)." << endl << endl;
+< 	cout << "  --double | --no-double: enable | disable generate double as data type extension (disabled by default)." << endl << endl;
+< 	cout << "  --complex | --no-complex: enable | disable generate complex as data type extension (disabled by default)." << endl << endl;
+< 	cout << "  --loc-labels | --no-loc-labels: enable | disable local labels in program (disabled by default)." << endl << endl;
+< 	cout << "  --binary | --no-binary: enable | disable generate binary constant (disabled by default)." << endl << endl;
+< 	cout << "  --union-cast | --no-union-cast: enable | disable casting of union variable (disabled by default)." << endl << endl;
+< 	cout << "  //variable attributes " << endl << endl;
+< 	cout << "  --variable-attribute-aligned | --no-variable-attribute-aligned: enable | disable generate variable attribute aligned (disabled by default)." << endl << endl;
+< 	cout << "  --variable-attribute-unused | --no-variable-attribute-unused: enable | disable generate variable attribute unused (disabled by default)." << endl << endl;
+< 	cout << "  --variable-attribute-packed | --no-variable-attribute-packed: enable | disable __attribute__((packed)) (disabled by default)." << endl << endl;
+< 	cout << "  --variable-attribute-section | --no-variable-attribute-section: enable | disable variable attribute section extension. (disable by default)" << endl << endl;
+< 	cout << "  //label attributes " << endl << endl;
+< 	cout << "  --label-attribute-hot-cold | --label-attribute-hot-cold: enable | disable generate label attribute __attribute__((hot)) | __attribute__((cold)) (disabled by default)." << endl << endl;
+< 	cout << "  -----------------------------------------------------------------------------------------------" << endl << endl;
+< 	
+< 
+380a357
+> 
+584d560
+< //extensions added
+595,617d570
+< 		if (strcmp (argv[i], "--tm-relaxed") == 0) {
+< 			CGOptions::tm_relaxed(true);
+< 			continue;
+< 		}
+< 
+< 		if (strcmp (argv[i], "--no-tm-relaxed") == 0) {
+< 			CGOptions::tm_relaxed(false);
+< 			continue;
+< 		}
+< //***********
+< 
+< 
+< 		if (strcmp (argv[i], "--typeof") == 0) {
+< 			CGOptions::type_of(true);
+< 			continue;
+< 		}
+< 
+< 		if (strcmp (argv[i], "--no-typeof") == 0) {
+< 			CGOptions::type_of(false);
+< 			continue;
+< 		}
+< //***********
+< 
+805,825d757
+< 		if(strcmp (argv[i], "--stmt_expr") == 0){
+< 			CGOptions::stmt_expr(true);
+< 			continue;
+< 		}
+< 
+< 		if(strcmp (argv[i], "--no-stmt_expr") == 0){
+< 			CGOptions::stmt_expr(false);
+< 			continue;
+< 		}
+< 
+< 		if (strcmp (argv[i], "--variable-attribute-section") == 0) {
+<                         CGOptions::variable_attribute_section(true);
+<                         continue;
+<                 }
+< 
+<                 if (strcmp (argv[i], "--no-variable-attribute-section") == 0) {
+<                         CGOptions::variable_attribute_section(false);
+<                         continue;
+<                 }
+< 
+< 
+846,886d777
+< 		if (strcmp (argv[i], "--label-attribute-hot-cold") == 0) {
+< 			CGOptions::label_attribute_hot_cold(true);
+< 			continue;
+< 		}
+< 
+< 		if (strcmp (argv[i], "--no-label-attribute-hot-cold") == 0) {
+< 			CGOptions::label_attribute_hot_cold(false);
+< 			continue;
+< 		}
+< 
+< 		if (strcmp (argv[i], "--variable-attribute-aligned") == 0) {
+<                         CGOptions::variable_attribute_aligned(true);
+<                         continue;
+<                 }
+< 
+<                 if (strcmp (argv[i], "--no-variable-attribute-aligned") == 0) {
+<                         CGOptions::variable_attribute_aligned(false);
+<                         continue;
+<                 }
+< 
+< 
+< 		if (strcmp (argv[i], "--loc-labels") == 0) {
+< 			CGOptions::local_labels(true);
+< 			continue;
+< 		}
+< 
+< 		if (strcmp (argv[i], "--no-loc-labels") == 0) {
+< 			CGOptions::local_labels(false);
+< 			continue;
+< 		}
+< 
+< 		if (strcmp (argv[i], "--variable-attribute-packed") == 0) {
+< 			CGOptions::variable_attribute_packed(true);
+< 			continue;
+< 		}
+< 
+< 		if (strcmp (argv[i], "--no-variable-attribute-packed") == 0) {
+< 			CGOptions::variable_attribute_packed(false);
+< 			continue;
+< 		}
+< 
+897,968d787
+< 		if (strcmp (argv[i], "--variable-attribute-unused") == 0) {
+<                         CGOptions::variable_attribute_unused(true);
+<                         continue;
+<                 }
+< 
+<                 if (strcmp (argv[i], "--no-variable-attribute-unused") == 0) {
+<                         CGOptions::variable_attribute_unused(false);
+<                         continue;
+<                 }
+< 
+< 
+< 		if (strcmp (argv[i], "--int128") == 0) {
+<                         CGOptions::Int128(true);
+<                         continue;
+<                 }
+< 
+<                 if (strcmp (argv[i], "--no-int128") == 0) {
+<                         CGOptions::Int128(false);
+<                         continue;
+<                 }
+< 
+< 		if (strcmp (argv[i], "--binary") == 0) {
+<                         CGOptions::binary(true);
+<                         continue;
+<                 }
+< 
+<                 if (strcmp (argv[i], "--no-binary") == 0) {
+<                         CGOptions::binary(false);
+<                         continue;
+<                 }
+< 
+< 		if (strcmp (argv[i], "--double") == 0) {
+<                         CGOptions::double_enable(true);
+<                         continue;
+<                 }
+< 
+<                 if (strcmp (argv[i], "--no-double") == 0) {
+<                         CGOptions::double_enable(false);
+<                         continue;
+<                 }
+< 
+< 		if (strcmp (argv[i], "--union-cast") == 0) {
+<                         CGOptions::union_cast(true);
+<                         continue;
+<                 }
+< 
+<                 if (strcmp (argv[i], "--no-union-cast") == 0) {
+<                         CGOptions::union_cast(false);
+<                         continue;
+<                 }
+< 
+<                 if (strcmp (argv[i], "--uint128") == 0) {
+<                         CGOptions::UInt128(true);
+<                         continue;
+<                 }
+< 
+<                 if (strcmp (argv[i], "--no-uint128") == 0) {
+<                         CGOptions::UInt128(false);
+< 			continue;
+< 		}
+< 
+< 		
+< 		if (strcmp (argv[i], "--complex") == 0) {
+<                         CGOptions::complex(true);
+<                         continue;
+<                 }
+< 
+<                 if (strcmp (argv[i], "--no-complex") == 0) {
+<                         CGOptions::complex(false);
+<                         continue;
+<                 }
+< 
+1034,1044d852
+< 		if (strcmp (argv[i], "--computed-goto") == 0) {
+< 			CGOptions::computed_goto(true);
+< 			continue;
+< 		}
+< 
+< 		if (strcmp (argv[i], "--no-computed-goto") == 0) {
+< 			CGOptions::computed_goto(false);
+< 			continue;
+< 		}
+< 
+< 
+1192c1000
+< 				continue;
+---
+> 			continue;
+1654c1462
+< //generates instance of DFS/Default progarm generator and initializes it(i.e creates OutputMgr object ) and dumps the probabilities and returns the object
+---
+> 
+1660d1467
+< //actual generation of CFG and traversing the tree
+Only in .: RandomProgramGenerator.o
+Only in .: Reducer.o
+Only in .: ReducerOutputMgr.o
+diff ./SafeOpFlags.cpp ../../../remove_warnings/original/csmith/src/SafeOpFlags.cpp
+99d98
+< 	//*add when unsigned added*//
+Only in .: SafeOpFlags.o
+Only in .: SequenceFactory.o
+Only in .: Sequence.o
+Only in .: SimpleDeltaRndNumGenerator.o
+Only in .: SimpleDeltaSequence.o
+Only in .: SplatExtension.o
+diff ./StatementArrayOp.cpp ../../../remove_warnings/original/csmith/src/StatementArrayOp.cpp
+123,126d122
+< 			if(cv->type->is_double()) {
+< 				invalid_vars.push_back(cv);
+< 				continue;
+< 			}
+Only in .: StatementArrayOp.o
+diff ./StatementAssign.cpp ../../../remove_warnings/original/csmith/src/StatementAssign.cpp
+98c98
+< 	if (type && (type->eType != eSimple || type->get_base_type()->is_float() ||  type->get_base_type()->is_double())) {
+---
+> 	if (type && (type->eType != eSimple || type->get_base_type()->is_float())) {
+208,210c208,209
+< 	if ( ( (lhs->get_var()->type->get_base_type()->is_float() || e->get_type().get_base_type()->is_float())
+< 	    && !StatementAssign::AssignOpWorksForFloat(op) ) || ( (lhs->get_var()->type->get_base_type()->is_double() || e->get_type().get_base_type()->is_double())
+< 	    && !StatementAssign::AssignOpWorksForFloat(op)) ) {
+---
+> 	if ((lhs->get_var()->type->get_base_type()->is_float() || e->get_type().get_base_type()->is_float())
+> 	    && !StatementAssign::AssignOpWorksForFloat(op)) {
+492,500c491
+< 		//termtype!=0 indicates no assigning of constants
+< 		if (expr.expr_stmt_expr_true && expr.term_type!=0 && CGOptions::stmt_expr()){
+< 				out << " ({ ";
+< 				expr.Output(out);
+< 				out << " ; }) ";
+< 		}
+< 		else{
+< 			expr.Output(out);
+< 		}
+---
+> 		expr.Output(out);
+539,544d529
+< 			}
+< 			else if (expr.expr_stmt_expr_true && CGOptions::stmt_expr()){
+< 				output_op(out);
+< 				out << " ({ ";
+< 				expr.Output(out);
+< 				out << " ; }) ";
+Only in .: StatementAssign.o
+Only in .: StatementBreak.o
+Only in .: StatementContinue.o
+diff ./Statement.cpp ../../../remove_warnings/original/csmith/src/Statement.cpp
+237c237
+< 					   eStatementType t)//the second parameter is passed by default(MAX_STATEMENT_TYPE) in the header file
+---
+> 					   eStatementType t)
+519c519
+< const StatementGoto* sg = dynamic_cast<const StatementGoto*>(e->src);
+---
+> 				const StatementGoto* sg = dynamic_cast<const StatementGoto*>(e->src);
+954,960c954
+< 		out << gotos[0]->label << ":";
+< 		if (CGOptions::label_attribute_hot_cold()){
+< 			if (rnd_flipcoin(LabelAttriHotColdProb)){
+< 				rnd_flipcoin(50) ? out << "__attribute__((hot))" : out << "__attribute__((cold))";
+< 			}
+< 		}
+< 		out << endl;
+---
+> 		out << gotos[0]->label << ":" << endl;
+Only in .: StatementExpr.o
+diff ./StatementFor.cpp ../../../remove_warnings/original/csmith/src/StatementFor.cpp
+255a256
+> 
+290,297d290
+< 
+< 	if(CGOptions::stmt_expr()){
+< 		const StatementAssign *increment = sf->get_incr();
+< 		const Expression* rhs_expr = increment->get_rhs();
+< 		if(rhs_expr->term_type == eFunction){
+< 			sf->for_stmt_expr_true = true;
+< 		}
+< 	}
+410,417c403
+< 	if(this->for_stmt_expr_true && CGOptions::stmt_expr()){
+< 		out << " ({ ";
+< 		incr.OutputAsExpr(out);
+< 		out << ";";
+< 		out << " })";
+< 	}
+< 	else
+< 		incr.OutputAsExpr(out);
+---
+> 	incr.OutputAsExpr(out);
+diff ./StatementFor.h ../../../remove_warnings/original/csmith/src/StatementFor.h
+80d79
+< 	bool for_stmt_expr_true = false;
+Only in .: StatementFor.o
+diff ./StatementGoto.cpp ../../../remove_warnings/original/csmith/src/StatementGoto.cpp
+263,268c263
+< 
+< //**changehere**//
+< 	if(CGOptions::computed_goto())
+< 		out << "goto " << other_name_for_label << ";";
+< 	else
+< 		out << "goto " << label << ";";
+---
+> 	out << "goto " << label << ";";
+423,444c418
+< //*changehere*//
+< void 
+< StatementGoto::change_label(std::vector<string> addr_labels) const{
+< 	string find_label="";
+< 	find_label+="&&";
+< 	find_label+=label;
+< 	auto it = std::find(addr_labels.begin(),addr_labels.end(),find_label);
+< 	int index;
+< 	if(it == addr_labels.end()){
+< 		assert ("LABEL NOT FOUND");
+< 	}
+< 	else{
+< 	index = std::distance (addr_labels.begin(),it);
+< 	}
+< 	std::stringstream ss;
+< 	ss.clear();
+< 	ss<< "*target[";
+< 	ss<<index;
+< 	ss<<"]";
+< 	other_name_for_label="";
+< 	other_name_for_label=ss.str();
+< }
+---
+> 
+diff ./StatementGoto.h ../../../remove_warnings/original/csmith/src/StatementGoto.h
+72d71
+< //*changehere added mutable **/
+74d72
+< 	mutable std::string other_name_for_label;
+77,79d74
+< 
+< 	//*changehere*//
+< 	void change_label(std::vector<string> addr_labels) const;
+Only in .: StatementGoto.o
+Only in .: StatementIf.o
+Only in .: Statement.o
+Only in .: StatementReturn.o
+Only in .: StringUtils.o
+diff ./Type.cpp ../../../remove_warnings/original/csmith/src/Type.cpp
+75,113d74
+< 
+< void Type::output_aligned(){
+< 
+< 		int probobility__BIGGEST_ALIGNMENT__ = 38;
+< 		bool use__BIGGEST_ALIGNMENT__ = rnd_flipcoin(probobility__BIGGEST_ALIGNMENT__);
+< 		if (use__BIGGEST_ALIGNMENT__)
+< 			cout << " __attribute__((aligned(__BIGGEST_ALIGNMENT__)))";
+< 		else{
+< 			int value = 0;
+< 			int power = rnd_upto(8);
+< 			if (power == 0)
+< 				power++;
+< 			switch (power){
+< 				case 1:
+< 					value = 2;
+< 					break;
+< 				case 2:
+< 					value = 4;
+< 					break;
+< 				case 3:
+< 					value = 8;
+< 					break;
+< 				case 4:
+< 					value = 16;
+< 					break;
+< 				case 5:
+< 					value = 32;
+< 					break;
+< 				case 6:
+< 					value = 64;
+< 					break;
+< 				case 7:
+< 					value = 128;
+< 					break;
+< 			}
+< 			cout << " __attribute__((aligned(" <<value << ")))";
+< 		}
+< }
+< 
+334d294
+< 	var_attri_packed_for_struct =false;
+336d295
+< 	var_attri_aligned_for_struct =false;
+355,356d313
+< 	var_attri_packed_for_struct =false;
+< 	var_attri_aligned_for_struct =false;
+378d334
+< 	var_attri_packed_for_struct =false;
+380d335
+< 	var_attri_aligned_for_struct =false;
+478,487d432
+< 	else if (type_string == "Int128") {
+< 		return &Type::get_simple_type(eInt128);
+< 	}
+< 	else if (type_string == "UInt128") {
+< 		return &Type::get_simple_type(eUInt128);
+< 	}
+< 	else if (type_string == "Double") {
+<                 return &Type::get_simple_type(eDouble);
+<         }
+< 
+1298,1311d1242
+< 	//we are setting the probability 
+< 	if (CGOptions::variable_attribute_packed()){
+< 		size_t i;
+< 		for (i=0; i<AllTypes.size(); i++)
+< 		{
+<         		Type* t = AllTypes[i];
+< 			//restricting only to struct for now , If needed ask andi and can change to union if he suggests
+< 		       	if ( (t->eType == eStruct )) {
+<         		    	if(rnd_flipcoin(VariableAttriPackedProb))
+< 					t->var_attri_packed_for_struct = true;
+<        			}
+<    		}
+< 	}
+< 
+1496,1498d1426
+< 			case eInt128: return &get_simple_type(eInt128);
+< 			case eUInt128: return &get_simple_type(eUInt128);
+< 			case eDouble: return &get_simple_type(eDouble);
+1532d1459
+< 			case eDouble:
+1569,1572d1495
+< 		else if ((ptr_type->simple_type == eDouble && t->ptr_type->simple_type != eDouble) ||
+<                         (ptr_type->simple_type != eDouble && t->ptr_type->simple_type == eDouble))
+<                    return false;
+< 
+1661c1584
+< 		case eShort:		return 2;
+---
+> 		case eShort:	return 2;
+1664,1665c1587,1588
+< 		case eLongLong:		return 8;
+< 		case eUChar:		return 1;
+---
+> 		case eLongLong:	return 8;
+> 		case eUChar:	return 1;
+1667,1673c1590,1594
+< 		case eUShort:		return 2;
+< 		case eULong:		return 4;
+< 		case eULongLong:	return 8;
+< 		case eFloat:		return 4;
+< 		case eInt128: 		return 16;
+< 		case eUInt128: 		return 16;
+< 		case eDouble:	return 8;
+---
+> 		case eUShort:	return 2;
+> 		case eULong:	return 4;
+> 		case eULongLong:return 8;
+> 		case eFloat:	return 4;
+> //		case eDouble:	return 8;
+1744,1750d1664
+<        // choose double as LHS type
+<        if (!type) {
+<                if (StatementAssign::AssignOpWorksForFloat(op) ) {
+<                        type = &Type::get_simple_type(eDouble);
+<                }
+<        }
+< 
+1809,1822c1723
+< 		}
+< 		else if(this->simple_type == eDouble && CGOptions::double_enable()){
+< 			out << "double ";
+< 		}
+< 		else {
+< 			if(this->simple_type == eInt128){
+< 				out << "__int";
+< 				out << (SizeInBytes() * 8);
+< 			}
+< 			else if(this->simple_type == eUInt128){
+< 				out << "unsigned __int";
+< 				out << (SizeInBytes() * 8);
+< 			}
+< 			else{
+---
+> 		} else {
+1826d1726
+< 			}
+1963,1964c1863
+< 	//if and only if the variable attribute isn't set else if variable attribute is set then use __attribute__((packed))
+<         if (type->packed_ && !CGOptions::variable_attribute_packed()) {
+---
+>         if (type->packed_) {
+2001,2006c1900
+< 				out << " f" << j++ ;
+< 			      	if (type->var_attri_aligned_for_struct){
+<                 			Type *type;
+<                 			type->output_aligned();
+<         			}
+<                                 out << ";";
+---
+> 				out << " f" << j++ << ";";
+2020,2032c1914
+<         out << "}";
+<        if (type->var_attri_aligned_for_struct){
+<                Type *type;
+<                type->output_aligned();
+<        }
+< 
+< 	//@end of struct defination
+< 	if (CGOptions::variable_attribute_packed()){
+< 		if (type->var_attri_packed_for_struct){
+< 				out << " __attribute__((packed))";
+< 		}
+< 	}
+< 	out << ";";
+---
+>         out << "};";
+2034,2035c1916
+< 	//if and only if the variable attribute isn't set else if variable attribute is set then use __attribute__((packed))
+<         if (type->packed_ && !CGOptions::variable_attribute_packed()) {
+---
+>         if (type->packed_) {
+2047,2058d1927
+< 	//we are setting the probability , JOYTO- use CLI option for below block
+<     if (CGOptions::variable_attribute_aligned()){
+< 	size_t i;
+< 	for (i=0; i<AllTypes.size(); i++)
+< 	{
+<         	Type* t = AllTypes[i];
+< 	        if ( (t->eType == eStruct || t->eType == eUnion)) {
+<         	    	if(rnd_flipcoin(VariableAttriAlignedProb))
+< 				t->var_attri_aligned_for_struct = true;
+<        		}
+<    	}
+<    }
+diff ./Type.h ../../../remove_warnings/original/csmith/src/Type.h
+84c84
+< 	eDouble,
+---
+> 	// eDouble,
+86,87d85
+< 	eUInt128,
+< 	eInt128,
+89c87
+< #define MAX_SIMPLE_TYPES ((eSimpleType) (eInt128+1))
+---
+> #define MAX_SIMPLE_TYPES ((eSimpleType) (eULongLong+1))
+247,249d244
+< 	bool is_double() const {
+< 		return ((eType == eSimple) && (simple_type == eDouble));
+< 	}
+276,278c271
+< 	bool var_attri_packed_for_struct;
+< 	bool var_attri_aligned_for_struct;
+<         void output_aligned();
+---
+> 
+Only in .: Type.o
+Only in .: util.o
+diff ./Variable.cpp ../../../remove_warnings/original/csmith/src/Variable.cpp
+81,119d80
+< void Variable::output_aligned(){
+< 
+< 		int probobility__BIGGEST_ALIGNMENT__ = 38;
+< 		bool use__BIGGEST_ALIGNMENT__ = rnd_flipcoin(probobility__BIGGEST_ALIGNMENT__);
+< 		if (use__BIGGEST_ALIGNMENT__)
+< 			cout << " __attribute__((aligned(__BIGGEST_ALIGNMENT__)))";
+< 		else{
+< 			int value = 0;
+< 			int power = rnd_upto(8);
+< 			if (power == 0)
+< 				power++;
+< 			switch (power){
+< 				case 1:
+< 					value = 2;
+< 					break;
+< 				case 2:
+< 					value = 4;
+< 					break;
+< 				case 3:
+< 					value = 8;
+< 					break;
+< 				case 4:
+< 					value = 16;
+< 					break;
+< 				case 5:
+< 					value = 32;
+< 					break;
+< 				case 6:
+< 					value = 64;
+< 					break;
+< 				case 7:
+< 					value = 128;
+< 					break;
+< 			}
+< 			cout << " __attribute__((aligned(" <<value << ")))";
+< 		}
+< 
+< }
+< 
+477,478d437
+< 	var_attri_unused = false;
+< 	var_attri_section = false;
+480,481d438
+< 	is_typeof=false;
+< 	var_attri_aligned = false;
+495,496d451
+< 	var_attri_unused = false;
+< 	var_attri_section = false;
+498d452
+< 	var_attri_aligned = false;
+510,511d463
+< 	var_attri_unused = false;
+< 	var_attri_section = false;
+513,514d464
+< 	is_typeof=false;
+< 	var_attri_aligned = false;
+729,744c679
+< 
+< 	out << get_actual_name();
+< 	if (var_attri_aligned){
+<                 Variable *var;
+<                 var->output_aligned();
+<         }
+<         static int i;
+<         if (var_attri_section){
+<                 out << " __attribute__((section(\"usersection";
+<                 out << i++ << "\")))";
+<         }
+< 
+<         if (var_attri_unused)
+<                 out << " __attribute__((unused))";
+<         out << " = ";
+< 
+---
+> 	out << get_actual_name() << " = ";
+763c698
+< 	out << get_actual_name() ;
+---
+> 	out << get_actual_name();
+816,819c751
+< 	if(this->is_typeof_used_param || this->is_typeof_used_local)
+< 		qfer.output_qualified_type_of_typeof(type, out);
+< 	else
+< 		qfer.output_qualified_type(type , out);
+---
+> 	qfer.output_qualified_type(type, out);
+997d928
+< 		cout << "\t " << var[i]->name;
+diff ./Variable.h ../../../remove_warnings/original/csmith/src/Variable.h
+140,141d139
+< 	void output_aligned();
+< 
+162d159
+< 	bool var_attri_section;
+165,170c162
+< //changehere
+< 	bool var_attri_aligned;
+< 	bool is_typeof= false;
+< 	bool is_typeof_used_param = false;
+< 	bool is_typeof_used_local = false;
+< 	bool var_attri_unused;
+---
+> 
+Only in .: Variable.o
+diff ./VariableSelector.cpp ../../../remove_warnings/original/csmith/src/VariableSelector.cpp
+3c3
+< // Copyright (c) 2007, 2008, 2009, 2010, 2011, 2013, 2014, 2015, 2017 The University of Utah
+---
+> // Copyright (c) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017 The University of Utah
+498a499
+> 
+519d519
+< 
+523,535d522
+< Variable *
+< VariableSelector::create_and_initialize_complex (Effect::Access access, const CGContext &cg_context, const Type* t,
+< 					const CVQualifiers* qfer, Block *blk, std::string name)
+< {
+< 	const Expression* init = NULL;
+<         Variable* var = NULL;
+< //	init = make_complex_init_value(access, cg_context, t, qfer, blk);
+< 	init = make_init_value(access, cg_context, t, qfer, blk);
+< 	var = new_variable(name, t, init, qfer);
+< 	assert(var);
+< 	var->qfer.set_complex( true );
+< 	return var;
+< }
+553,559c540,541
+< 	Variable *var=NULL;
+< 	if(CGOptions::complex() && ( t->eType == eSimple && t->simple_type == eFloat))
+< 		var = create_and_initialize_complex(access, cg_context, t, &var_qfer, 0, name);
+< 	else if(CGOptions::complex() && ( t->eType == eSimple && t->simple_type == eDouble))
+< 		var = create_and_initialize_complex(access, cg_context, t, &var_qfer, 0, name);
+< 	else
+< 		var = create_and_initialize(access, cg_context, t, &var_qfer, 0, name);
+---
+> 	Variable* var = create_and_initialize(access, cg_context, t, &var_qfer, 0, name);
+> 
+573,600d554
+< 	if(var->get_actual_name() == "g_101"){
+< 		cout << " \nCVQUALIFIERS ";
+< 		if (var_qfer.is_volatile())
+< 			cout << " volatile ";
+< 		else if (var_qfer.is_const())
+< 			cout << " const ";
+< 		else if (var_qfer.is_qualifier_complex() == true)
+< 			cout << "complex ";
+< 		cout <<"\t type "<< t->simple_type;
+< 	}
+< 	int prob = 0;
+< 	if(CGOptions::variable_attribute_unused()){
+< 		prob = rnd_flipcoin(VariableAttriUnusedProb);
+< 	}
+< 	else
+< 		prob = 0;
+< 
+< 	if(prob)
+< 		var->var_attri_unused = true;
+< 
+< 	if (CGOptions::variable_attribute_section()){
+<                  if (rnd_flipcoin(VariableAttriSectionProb))
+<                          var->var_attri_section = true;
+<         }
+< 	if (CGOptions::variable_attribute_aligned()){
+<                  if (rnd_flipcoin(VariableAttriAlignedProb))
+<                  	var->var_attri_aligned = true;
+< 	}
+602d555
+< 
+630,648d582
+< 
+< 	int prob = 0;
+< 	if(CGOptions::variable_attribute_unused()){
+< 		prob = rnd_flipcoin(VariableAttriUnusedProb);
+< 	}
+< 	else
+< 		prob = 0;
+< 
+< 	if(prob)
+< 		var->var_attri_unused = true;
+< 
+< 	if (CGOptions::variable_attribute_section()){
+<                  if (rnd_flipcoin(VariableAttriSectionProb))
+<                          var->var_attri_section = true;
+<         }
+< 	if (CGOptions::variable_attribute_aligned()){
+<                  if (rnd_flipcoin(VariableAttriAlignedProb))
+<                         var->var_attri_aligned = true;
+<         }
+991,1007d924
+< 
+< 	int prob = 0;
+<         if(CGOptions::variable_attribute_unused()){
+<                 prob = rnd_flipcoin(VariableAttriUnusedProb);
+<         }
+<         else
+<                 prob = 0;
+< 
+<         if(prob)
+<                 var->var_attri_unused = true;
+< 
+< 	if (CGOptions::variable_attribute_aligned()){
+<                  if (rnd_flipcoin(VariableAttriAlignedProb))
+<                         var->var_attri_aligned = true;
+<         }
+< 
+< 
+1207d1123
+< 
+1229,1237c1145,1153
+<                 if (vars[i]->type &&
+<                         (!vars[i]->type->has_int_field() ||             // remove variables isn't (or doesn't contain) integers
+<                         (vars[i]->type->eType == eUnion &&
+<                         vars[i]->type->contain_pointer_field()))) {
+<                         vars.erase(vars.begin() + i);
+<                         i--;
+<                         len--;
+<                 }
+<         }
+---
+> 		if (vars[i]->type &&
+> 			(!vars[i]->type->has_int_field() ||		// remove variables isn't (or doesn't contain) integers
+> 			(vars[i]->type->eType == eUnion &&
+> 			vars[i]->type->contain_pointer_field()))) {
+> 			vars.erase(vars.begin() + i);
+> 			i--;
+> 			len--;
+> 		}
+> 	}
+1505,1506d1420
+< 					continue;
+< 				if (iv->type->is_double())
+diff ./VariableSelector.h ../../../remove_warnings/original/csmith/src/VariableSelector.h
+154,155c154
+< 	static Variable * create_and_initialize_complex (Effect::Access access, const CGContext &cg_context, const Type* t,
+< 					const CVQualifiers* qfer, Block *blk, std::string name);
+---
+> 
+Only in .: VariableSelector.o
+Only in .: VectorFilter.o
